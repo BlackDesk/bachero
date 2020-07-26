@@ -23,11 +23,11 @@ add_subdirectory(libs)
 file(GLOB_RECURSE HEADERS
         "${PROJECT_SOURCE_DIR}/include/*.h")
 
-file(GLOB_RECURSE SOURCE
+file(GLOB_RECURSE SOURCES
         "${PROJECT_SOURCE_DIR}/src/*.h"
         "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 #----------------------TARGETS---------------------------#
 
-add_executable(bachero main.cpp ${HEADERS} ${SOURCE})
+add_executable(bachero main.cpp ${HEADERS} ${SOURCES})
 target_link_libraries(bachero ${SDL2_LIBRARIES})
