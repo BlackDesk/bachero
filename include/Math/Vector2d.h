@@ -36,13 +36,13 @@ namespace Math {
         }
 
         Vector2d operator-() {
-            Vector2d result(-this->x, -this->y);
+            Vector2d result(-x, -y);
             return result;
         }
 
         template<typename Q>
         decltype(auto) dotProduct(const Vector2d<Q> &other) {
-            return this->x * other.x + this->y * other.y;
+            return x * other.x + y * other.y;
         }
 
         template<typename Q>
