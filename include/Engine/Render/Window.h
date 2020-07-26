@@ -28,8 +28,7 @@ namespace Engine::Render {
         }
 
         ~Window() {
-            if (window)
-                delete window;
+            delete window;
             delete screenSurface;
         }
 

@@ -14,8 +14,6 @@ namespace Engine {
 
         void init() {
             environment = std::make_unique<Render::Environment>();
-            environment->init();
-
             window = std::make_unique<Render::Window>();
         }
 
@@ -23,8 +21,6 @@ namespace Engine {
             if (_cleaned)
                 return;
             _cleaned = true;
-
-            environment->clean();
         }
 
         bool isRunning() const {

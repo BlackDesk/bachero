@@ -7,13 +7,13 @@
 namespace Engine::Render {
     class Environment {
     public:
-        void init() {
+        Environment() {
             if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
                 throw std::runtime_error(
                         (std::string) "could not initialize sdl2: \n" + SDL_GetError());
         }
 
-        void clean() {
+        ~Environment() {
             SDL_Quit();
         }
     };
