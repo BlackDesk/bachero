@@ -5,11 +5,15 @@
 #ifndef BACHERO_VECTOR3D_H
 #define BACHERO_VECTOR3D_H
 
+#include "Vector2d.h"
+
 namespace Math {
     template<typename T>
     class Vector3d {
     public:
         explicit Vector3d(const T &_x, const T &_y, const T & _z) : x(_x), y(_y), z(_z){};
+        template <typename Q>
+        explicit Vector3d(const Vector2d<Q> other) : x(other.x), y(other.y), z(other.z){};
 
         template<typename Q>
         Vector3d &operator*=(const Q number) {
@@ -55,6 +59,7 @@ namespace Math {
             result.x = y * other.z - z * other.y;
             result.y = z * other.x - x * other.z;
             result.z = x * other.y - y * other.x;
+            return result;
         }
 
 //        template<typename Q>
