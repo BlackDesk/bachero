@@ -1,7 +1,7 @@
 #ifndef BACHERO_VECTOR3_H
 #define BACHERO_VECTOR3_H
 
-namespace Math {
+namespace Engine::Math {
     template<typename T>
     class Vector3 {
     public:

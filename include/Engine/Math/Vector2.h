@@ -3,7 +3,7 @@
 
 #include "Vector3.h"
 
-namespace Math {
+namespace Engine::Math {
     template<typename T>
     class Vector2 {
     public:
