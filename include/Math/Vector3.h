@@ -1,22 +1,14 @@
-//
-// Created by blackdesk on 26.07.2020.
-//
-
-#ifndef BACHERO_VECTOR3D_H
-#define BACHERO_VECTOR3D_H
-
-#include "Vector2d.h"
+#ifndef BACHERO_VECTOR3_H
+#define BACHERO_VECTOR3_H
 
 namespace Math {
     template<typename T>
-    class Vector3d {
+    class Vector3 {
     public:
-        explicit Vector3d(const T &_x, const T &_y, const T & _z) : x(_x), y(_y), z(_z){};
-        template <typename Q>
-        explicit Vector3d(const Vector2d<Q> other) : x(other.x), y(other.y), z(other.z){};
+        explicit Vector3(const T &_x, const T &_y, const T & _z) : x(_x), y(_y), z(_z){};
 
         template<typename Q>
-        Vector3d &operator*=(const Q number) {
+        Vector3 &operator*=(const Q number) {
             x *= number;
             y *= number;
             z *= number;
@@ -24,38 +16,38 @@ namespace Math {
         }
 
         template<typename Q>
-        Vector3d &operator/=(const Q number) {
+        Vector3 &operator/=(const Q number) {
             x /= number;
             y /= number;
             z /= number;
             return *this;
         }
 
-        Vector3d &operator+=(const Vector3d &other) {
+        Vector3 &operator+=(const Vector3 &other) {
             x += other.x;
             y += other.y;
             z += other.z;
             return *this;
         }
 
-        Vector3d &operator-=(const Vector3d &other) {
+        Vector3 &operator-=(const Vector3 &other) {
             *this += -other;
             return *this;
         }
 
-        Vector3d operator-() {
-            Vector3d result(-x, -y, -z);
+        Vector3 operator-() {
+            Vector3 result(-x, -y, -z);
             return result;
         }
 
         template<typename Q>
-        decltype(auto) dotProduct(const Vector3d<Q> &other) {
+        decltype(auto) dotProduct(const Vector3<Q> &other) {
             return x * other.x + y * other.y + z * other.z;
         }
 
         template<typename Q>
-        Vector3d crossProduct(const Vector3d<Q> & other) {
-            Vector3d result;
+        Vector3 crossProduct(const Vector3<Q> & other) {
+            Vector3 result;
             result.x = y * other.z - z * other.y;
             result.y = z * other.x - x * other.z;
             result.z = x * other.y - y * other.x;
@@ -63,7 +55,7 @@ namespace Math {
         }
 
 //        template<typename Q>
-//        decltype(auto) pseudoDotProduct(const Vector3d<Q> &other) {
+//        decltype(auto) pseudoDotProduct(const Vector3<Q> &other) {
 //            return x * other.y - y * other.x;
 //        }
 
@@ -82,37 +74,40 @@ namespace Math {
     };
 
     template<typename T>
-    bool operator==(const Vector3d<T> &first, const Vector3d<T> &second) {
-        return first.x == second.x && first.y == first.y && first.z == second.z;
+    bool operator==(const Vector3<T> &first, const Vector3<T> &second) {
+        return first.x == second.x && first.y == second.y && first.z == second.z;
     }
 
     template<typename T>
-    bool operator!=(const Vector3d<T> first, const Vector3d<T> second) {
+    bool operator!=(const Vector3<T> first, const Vector3<T> second) {
         return !(first == second);
     }
 
     template<typename T>
-    Vector3d<T> operator+(const Vector3d<T> &first, const Vector3d<T> &second) {
-        Vector3d<T> result = first;
+    Vector3<T> operator+(const Vector3<T> &first, const Vector3<T> &second) {
+        Vector3<T> result = first;
         result += second;
         return result;
     }
 
     template<typename T>
-    Vector3d<T> operator-(const Vector3d<T> &first, const Vector3d<T> &second) {
-        Vector3d<T> result = first;
+    Vector3<T> operator-(const Vector3<T> &first, const Vector3<T> &second) {
+        Vector3<T> result = first;
         result -= second;
         return result;
     }
 
     template<typename T, typename Q>
-    Vector3d<T> operator*(const Q &number, const Vector3d<T> &vector) {
-        Vector3d<T> result = vector;
+    Vector3<T> operator*(const Q &number, const Vector3<T> &vector) {
+        Vector3<T> result = vector;
         result *= number;
         return result;
     }
 
+    typedef Vector3<double> Vector3d;
+    typedef Vector3<int> Vector3i;
+    typedef Vector3<unsigned int> Vector3ui;
 }
 
 
-#endif //BACHERO_VECTOR3D_H
+#endif //BACHERO_VECTOR3_H
