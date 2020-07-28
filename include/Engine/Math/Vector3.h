@@ -5,7 +5,8 @@ namespace Engine::Math {
     template<typename T>
     class Vector3 {
     public:
-        explicit Vector3(const T &_x, const T &_y, const T & _z) : x(_x), y(_y), z(_z){};
+        explicit Vector3() = default;
+        Vector3(const T &_x, const T &_y, const T & _z) : x(_x), y(_y), z(_z){};
 
         template<typename Q>
         Vector3 &operator*=(const Q number) {

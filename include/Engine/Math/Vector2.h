@@ -7,7 +7,8 @@ namespace Engine::Math {
     template<typename T>
     class Vector2 {
     public:
-        explicit Vector2(const T &_x, const T &_y) : x(_x), y(_y) {};
+        explicit Vector2() = default;
+        Vector2(const T &_x, const T &_y) : x(_x), y(_y) {};
 
         operator Vector3<T>() {
             return Vector3<T>(x, y, 0);

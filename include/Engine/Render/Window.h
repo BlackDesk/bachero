@@ -3,38 +3,28 @@
 
 #include "SDL.h"
 
+#include "Engine/Math/Vector2.h"
+#include "Engine/Render/Renderer.h"
+
 #include <stdexcept>
 #include <string>
 
 namespace Engine::Render {
     class Window {
     public:
-        Window(size_t width = 640, size_t height = 480, bool fullscreen = false) {
-            uint32_t flags = SDL_WINDOW_SHOWN;
-            if (fullscreen)
-                flags |= SDL_WINDOW_FULLSCREEN;
+        Window(const std::string &title, Math::Vector2ui dimensions, bool fullscreen = false);
 
-            window = SDL_CreateWindow(
-                    "hello_sdl2",
-                    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                    width, height,
-                    flags
-            );
+        Renderer *getRenderer();
 
-            if (window == nullptr)
-                throw std::runtime_error((std::string)"could not create window: %s\n" + SDL_GetError());
+        void clear();
 
-            screenSurface = SDL_GetWindowSurface(window);
-        }
+        void present();
 
-        ~Window() {
-            delete window;
-            delete screenSurface;
-        }
+        ~Window();
 
     private:
-        SDL_Window* window = nullptr;
-        SDL_Surface* screenSurface = nullptr;
+        SDL_Window* _window = nullptr;
+        Renderer* _renderer = nullptr;
     };
 }
 
