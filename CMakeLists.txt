@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 3.2)
 project(bachero)
 
+#-----------------------FLAGS----------------------------#
+
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${PROJECT_SOURCE_DIR}/,,$(abspath $<))\"'")
+
+if (DEBUG_LEVEL)
+    add_definitions(-DDEBUG_LEVEL=${DEBUG_LEVEL})
+endif()
 
 #----------------------INCLUDE---------------------------#
 

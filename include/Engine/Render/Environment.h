@@ -2,6 +2,8 @@
 
 #include "SDL.h"
 
+#include "Engine/Render/RuntimeException.h"
+
 #include <iostream>
 
 namespace Engine::Render {
@@ -9,8 +11,7 @@ namespace Engine::Render {
     public:
         Environment() {
             if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-                throw std::runtime_error(
-                        (std::string) "could not initialize sdl2: \n" + SDL_GetError());
+                throwRenderRuntimeException("Could not initialize sdl2: \n");
         }
 
         ~Environment() {
