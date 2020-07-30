@@ -2,7 +2,9 @@
 
 #include "Engine/Render/Environment.h"
 #include "Engine/Render/Window.h"
-#include "Engine/Render/Texture.h"
+#include "Engine/Render/SpriteComponent.h"
+#include "Engine/Render/TextureManager.h"
+#include "Engine/ECS/Entity.h"
 
 #include <iostream>
 
@@ -18,7 +20,13 @@ namespace Engine {
             Math::Vector2ui winDimensions = {640, 480};
             _window = new Render::Window("Bachero!", winDimensions, false);
 
-            texture = Render::Texture::load("assets/sprite.bmp", _window->getRenderer());
+            auto *entity = ECS::EntityManager::getInstance()->createEntity<ECS::Entity>();
+            auto *texture = Render::TextureManager::getInstance()->
+                    loadTexture("assets/sprite.png",
+                                "player",
+                                _window->getRenderer());
+            entity->addComponent<TransformComponent>();
+            entity->addComponent<Render::SpriteComponent>(texture, Math::Vector2ui(144, 192));
         }
 
         void clean() {
@@ -47,20 +55,17 @@ namespace Engine {
                         break;
                 }
             }
+            ECS::EntityManager::getInstance()->handleEvents();
         }
 
         void update() {
-
+            ECS::EntityManager::getInstance()->update();
         }
 
         void render() {
             _window->clear();
 
-            auto size = texture->size();
-            Math::Rect_ui src{Math::Vector2ui(0, 0), size};
-            Math::Rect_ui dst{Math::Vector2ui(0, 0), size};
-
-            texture->draw(src, dst);
+            ECS::EntityManager::getInstance()->render();
 
             _window->present();
         }
@@ -69,8 +74,6 @@ namespace Engine {
     private:
         Render::Environment *_environment;
         Render::Window *_window;
-
-        Render::Texture *texture;
 
         bool _isRunning = true;
         bool _cleaned = false;

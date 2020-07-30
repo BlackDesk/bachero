@@ -11,7 +11,7 @@ namespace Engine::Render {
     public:
         Environment() {
             if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-                throwRenderRuntimeException("Could not initialize sdl2: \n");
+                throwRenderRuntimeExceptionSDL("Could not initialize sdl2: \n");
         }
 
         ~Environment() {

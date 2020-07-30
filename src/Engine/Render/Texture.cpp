@@ -6,12 +6,12 @@ namespace Engine::Render {
     Texture *Texture::load(const std::filesystem::path &path, Renderer *renderer) {
         SDL_Surface *tempSurface = IMG_Load(path.c_str());
         if (tempSurface == nullptr)
-            throwRenderRuntimeException("Could not load image: \n");
+            throwRenderRuntimeExceptionSDL("Could not load image: \n");
         SDL_Texture *SDL_texture = SDL_CreateTextureFromSurface(renderer->get(), tempSurface);
         SDL_FreeSurface(tempSurface);
 
         if (SDL_texture == nullptr)
-            throwRenderRuntimeException("Could not create texture: \n");
+            throwRenderRuntimeExceptionSDL("Could not create texture: \n");
 
         return new Texture(SDL_texture, renderer->get());
     }
@@ -25,7 +25,7 @@ namespace Engine::Render {
         return _size.value();
     }
 
-    void Texture::draw(Math::Rect_ui src, Math::Rect_ui dst) {
+    void Texture::draw(Math::Rect_ui src, Math::Rect_i dst) {
         auto src_ = (SDL_Rect)src;
         auto dst_ = (SDL_Rect)dst;
         SDL_RenderCopy(_renderer, _texture, &src_, &dst_);

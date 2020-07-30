@@ -15,7 +15,7 @@ namespace Engine::Render {
     public:
         static Texture *load(const std::filesystem::path &path, Renderer *renderer);
 
-        void draw(Math::Rect_ui src, Math::Rect_ui dst);
+        void draw(Math::Rect_ui src, Math::Rect_i dst);
 
         Math::Vector2ui size();
 

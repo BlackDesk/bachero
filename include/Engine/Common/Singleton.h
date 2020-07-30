@@ -12,6 +12,8 @@ namespace Engine::Common {
 
         static T *getInstance();
 
+    protected:
+        explicit Singleton() = default;
     private:
         static T *_instance;
     };

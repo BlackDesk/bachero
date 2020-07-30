@@ -16,13 +16,13 @@ namespace Engine::Render {
         );
 
         if (_window == nullptr)
-            throwRenderRuntimeException("could not create window: %s\n");
+            throwRenderRuntimeExceptionSDL("could not create window: %s\n");
 
         auto *SDL_renderer = SDL_CreateRenderer(_window, -1, 0);
         SDL_SetRenderDrawColor(SDL_renderer, 255,255,255,255);
 
         if (SDL_renderer == nullptr)
-            throwRenderRuntimeException("could not create renderer: %s\n");
+            throwRenderRuntimeExceptionSDL("could not create renderer: %s\n");
 
         _renderer = new Renderer(SDL_renderer);
     }

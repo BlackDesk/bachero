@@ -9,6 +9,11 @@ namespace Engine::Math {
         Vector3(const T &_x, const T &_y, const T & _z) : x(_x), y(_y), z(_z){};
 
         template<typename Q>
+        operator Vector3<Q>() {
+            return Vector3<Q>((Q)x, (Q)y, (Q)z);
+        }
+
+        template<typename Q>
         Vector3 &operator*=(const Q number) {
             x *= number;
             y *= number;

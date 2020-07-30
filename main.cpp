@@ -3,9 +3,11 @@
 #include <exception>
 
 #include "Engine/Game.h"
+#include "Engine/FramerateLimiter.h"
 
 int main(int argc, char* args[]) {
     auto game = std::make_unique<Engine::Game>();
+    Engine::FramerateLimiter limiter(60);
 
 #if DEBUG_LEVEL == 0 || !defined(DEBUG_LEVEL)
     try {
@@ -13,9 +15,14 @@ int main(int argc, char* args[]) {
         game->init();
 
         while (game->isRunning()) {
+            limiter.recordStart();
+
             game->handleEvents();
             game->update();
             game->render();
+
+            limiter.recordStop();
+            limiter.delay();
         }
 
 #if DEBUG_LEVEL == 0 || !defined(DEBUG_LEVEL)

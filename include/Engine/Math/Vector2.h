@@ -15,6 +15,11 @@ namespace Engine::Math {
         }
 
         template<typename Q>
+        operator Vector2<Q>() {
+            return Vector2<Q>((Q)x, (Q)y);
+        }
+
+        template<typename Q>
         Vector2 &operator*=(const Q number) {
             x *= number;
             y *= number;
