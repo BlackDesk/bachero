@@ -20,6 +20,7 @@ namespace Engine::Render {
 
         void render() override {
             _sprite->position = owner->getComponent<TransformComponent>()->position;
+            _sprite->frame = frame;
 
             _sprite->render();
         }
