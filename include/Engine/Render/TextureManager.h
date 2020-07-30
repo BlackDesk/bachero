@@ -10,7 +10,7 @@
 #include <filesystem>
 
 namespace Engine::Render {
-    class TextureManager : public Common::Singleton<TextureManager> {
+    class TextureManager : public Singleton<TextureManager> {
     public:
         Texture *loadTexture(const std::filesystem::path &path, const std::string &id, Renderer *renderer);
 

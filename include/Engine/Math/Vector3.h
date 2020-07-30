@@ -89,18 +89,20 @@ namespace Engine::Math {
         return !(first == second);
     }
 
-    template<typename T>
-    Vector3<T> operator+(const Vector3<T> &first, const Vector3<T> &second) {
-        Vector3<T> result = first;
-        result += second;
-        return result;
+    template<typename T, typename Q>
+    decltype(auto) operator+(const Vector3<T> &first, const Vector3<Q> &second) {
+        auto x = first.x + second.x;
+        auto y = first.y + second.y;
+        auto z = first.z + second.z;
+        return Vector3<decltype(x)>(x, y, z);
     }
 
-    template<typename T>
-    Vector3<T> operator-(const Vector3<T> &first, const Vector3<T> &second) {
-        Vector3<T> result = first;
-        result -= second;
-        return result;
+    template<typename T, typename Q>
+    decltype(auto) operator-(const Vector3<T> &first, const Vector3<Q> &second) {
+        auto x = first.x - second.x;
+        auto y = first.y - second.y;
+        auto z = first.z - second.z;
+        return Vector3<decltype(x)>(x, y, z);
     }
 
     template<typename T, typename Q>
@@ -109,6 +111,14 @@ namespace Engine::Math {
         result *= number;
         return result;
     }
+
+    template<typename T, typename Q>
+    Vector3<T> operator*(const Vector3<T> &vector, const Q &number) {
+        Vector3<T> result = vector;
+        result *= number;
+        return result;
+    }
+
 
     typedef Vector3<double> Vector3d;
     typedef Vector3<int> Vector3i;

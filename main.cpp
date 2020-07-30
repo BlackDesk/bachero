@@ -3,7 +3,8 @@
 #include <exception>
 
 #include "Engine/Game.h"
-#include "Engine/FramerateLimiter.h"
+#include "Engine/Common/FramerateLimiter.h"
+#include "Engine/Common/DeltaTime.h"
 
 int main(int argc, char* args[]) {
     auto game = std::make_unique<Engine::Game>();
@@ -15,6 +16,7 @@ int main(int argc, char* args[]) {
         game->init();
 
         while (game->isRunning()) {
+            Engine::DeltaTime::record();
             limiter.recordStart();
 
             game->handleEvents();

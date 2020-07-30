@@ -4,7 +4,7 @@
 
 namespace Engine::Render {
     Window::Window(const std::string &title, Math::Vector2ui dimensions, bool fullscreen) {
-        uint32_t flags = SDL_WINDOW_SHOWN;
+        uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
         if (fullscreen)
             flags |= SDL_WINDOW_FULLSCREEN;
 

@@ -4,6 +4,9 @@
 #include "Engine/Render/Window.h"
 #include "Engine/Render/SpriteComponent.h"
 #include "Engine/Render/TextureManager.h"
+#include "Engine/Input/InputManager.h"
+#include "Engine/Input/InputMapper.h"
+#include "Game/Components/PlayerMovementComponent.h"
 #include "Engine/ECS/Entity.h"
 
 #include <iostream>
@@ -20,6 +23,9 @@ namespace Engine {
             Math::Vector2ui winDimensions = {640, 480};
             _window = new Render::Window("Bachero!", winDimensions, false);
 
+            Input::InputManager::getInstance()->init();
+            Input::InputMapper::getInstance()->init();
+
             auto *entity = ECS::EntityManager::getInstance()->createEntity<ECS::Entity>();
             auto *texture = Render::TextureManager::getInstance()->
                     loadTexture("assets/sprite.png",
@@ -28,6 +34,7 @@ namespace Engine {
             entity->addComponent<TransformComponent>();
             entity->addComponent<Render::SpriteComponent>(texture, Math::Vector2ui(144, 192));
             entity->getComponent<Render::SpriteComponent>()->frame = {1, 0};
+            entity->addComponent<PlayerMovementComponent>();
             entity->init();
         }
 
@@ -35,6 +42,10 @@ namespace Engine {
             if (_cleaned)
                 return;
             _cleaned = true;
+
+            Input::InputMapper::getInstance()->clean();
+            Input::InputManager::getInstance()->clean();
+            Render::TextureManager::getInstance()->clean();
 
             delete _window;
 
@@ -47,17 +58,12 @@ namespace Engine {
         }
 
         void handleEvents() {
-            SDL_Event event;
-            if (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                    case SDL_QUIT:
-                        _isRunning = false;
-                        break;
-                    default:
-                        break;
-                }
-            }
+            Input::InputManager::getInstance()->handleEvents();
+            Input::InputMapper::getInstance()->handleEvents();
             ECS::EntityManager::getInstance()->handleEvents();
+
+            if (Input::InputManager::getInstance()->onQuit())
+                _isRunning = false;
         }
 
         void update() {

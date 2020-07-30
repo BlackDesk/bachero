@@ -101,7 +101,7 @@ namespace Engine::ECS {
         bool _isActive = true;
     };
 
-    class EntityManager : public Common::Singleton<EntityManager> {
+    class EntityManager : public Singleton<EntityManager> {
     public:
         template<class T, typename ...Args>
         Entity *createEntity(Args &&...args) {

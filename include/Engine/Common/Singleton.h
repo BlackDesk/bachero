@@ -1,7 +1,7 @@
 #ifndef BACHERO_ENGINE_COMMON_SINGLETON
 #define BACHERO_ENGINE_COMMON_SINGLETON
 
-namespace Engine::Common {
+namespace Engine {
     template<class T>
     class Singleton {
     public:

@@ -82,22 +82,29 @@ namespace Engine::Math {
         return !(first == second);
     }
 
-    template<typename T>
-    Vector2<T> operator+(const Vector2<T> &first, const Vector2<T> &second) {
-        Vector2<T> result = first;
-        result += second;
-        return result;
+    template<typename T, typename Q>
+    decltype(auto) operator+(const Vector2<T> &first, const Vector2<Q> &second) {
+        auto x = first.x + second.x;
+        auto y = first.y + second.y;
+        return Vector2<decltype(x)>(x, y);
     }
 
-    template<typename T>
-    Vector2<T> operator-(const Vector2<T> &first, const Vector2<T> &second) {
-        Vector2<T> result = first;
-        result -= second;
-        return result;
+    template<typename T, typename Q>
+    decltype(auto) operator-(const Vector2<T> &first, const Vector2<Q> &second) {
+        auto x = first.x - second.x;
+        auto y = first.y - second.y;
+        return Vector2<decltype(x)>(x, y);
     }
 
     template<typename T, typename Q>
     Vector2<T> operator*(const Q &number, const Vector2<T> &vector) {
+        Vector2<T> result = vector;
+        result *= number;
+        return result;
+    }
+
+    template<typename T, typename Q>
+    Vector2<T> operator*(const Vector2<T> &vector, const Q &number) {
         Vector2<T> result = vector;
         result *= number;
         return result;
