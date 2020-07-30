@@ -24,6 +24,8 @@ namespace Engine::ECS {
     class Component : public GameObject {
     public:
         Entity *owner;
+
+        virtual void init() {}
     };
 }
 

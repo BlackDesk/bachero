@@ -18,8 +18,15 @@ namespace Engine::Render {
 
         Math::Vector2ui frame;
 
+        void init() override {
+            if (!owner->hasComponent<TransformComponent>())
+                owner->addComponent<TransformComponent>();
+            _transform = owner->getComponent<TransformComponent>();
+        }
+
         void render() override {
-            _sprite->position = owner->getComponent<TransformComponent>()->position;
+            if (_transform)
+                _sprite->position = _transform->position;
             _sprite->frame = frame;
 
             _sprite->render();
@@ -27,6 +34,7 @@ namespace Engine::Render {
 
     private:
         std::unique_ptr<Sprite> _sprite;
+        TransformComponent *_transform = nullptr;
     };
 }
 

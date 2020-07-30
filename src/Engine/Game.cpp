@@ -28,6 +28,7 @@ namespace Engine {
             entity->addComponent<TransformComponent>();
             entity->addComponent<Render::SpriteComponent>(texture, Math::Vector2ui(144, 192));
             entity->getComponent<Render::SpriteComponent>()->frame = {1, 0};
+            entity->init();
         }
 
         void clean() {

@@ -59,6 +59,12 @@ namespace Engine::ECS {
             _components[id] = std::unique_ptr<T>();
         }
 
+        virtual void init() {
+            for (auto &component : _components)
+                if (component)
+                    component->init();
+        }
+
         void handleEvents() override {
             for (auto &component : _components)
                 if (component)
