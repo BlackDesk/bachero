@@ -2,26 +2,26 @@
 #include <iostream>
 #include <exception>
 
-#include "Engine/Game.h"
+#include "Engine/Engine.h"
 #include "Engine/Common/FramerateLimiter.h"
 #include "Engine/Common/DeltaTime.h"
 
 int main(int argc, char* args[]) {
-    auto game = std::make_unique<Engine::Game>();
+    auto *engine = Engine::Engine::getInstance();
     Engine::FramerateLimiter limiter(60);
 
 #if DEBUG_LEVEL == 0 || !defined(DEBUG_LEVEL)
     try {
 #endif
-        game->init();
+        engine->init();
 
-        while (game->isRunning()) {
+        while (engine->isRunning()) {
             Engine::DeltaTime::record();
             limiter.recordStart();
 
-            game->handleEvents();
-            game->update();
-            game->render();
+            engine->handleEvents();
+            engine->update();
+            engine->render();
 
             limiter.recordStop();
             limiter.delay();
@@ -35,5 +35,5 @@ int main(int argc, char* args[]) {
     }
 #endif
 
-    game->clean();
+    engine->clean();
 }

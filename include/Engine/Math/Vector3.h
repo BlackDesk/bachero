@@ -41,18 +41,26 @@ namespace Engine::Math {
             return *this;
         }
 
-        Vector3 operator-() {
+        Vector3 operator-() const {
             Vector3 result(-x, -y, -z);
             return result;
         }
 
         template<typename Q>
-        decltype(auto) dotProduct(const Vector3<Q> &other) {
+        decltype(auto) operator/(Q scalar) const {
+            auto x_ = x / scalar;
+            auto y_ = y / scalar;
+            auto z_ = z / scalar;
+            return Vector3<decltype(x)>(x_, y_, z_);
+        }
+
+        template<typename Q>
+        decltype(auto) dotProduct(const Vector3<Q> &other) const {
             return x * other.x + y * other.y + z * other.z;
         }
 
         template<typename Q>
-        Vector3 crossProduct(const Vector3<Q> & other) {
+        Vector3 crossProduct(const Vector3<Q> & other) const {
             Vector3 result;
             result.x = y * other.z - z * other.y;
             result.y = z * other.x - x * other.z;
@@ -60,16 +68,24 @@ namespace Engine::Math {
             return result;
         }
 
+        template<typename Q>
+        decltype(auto) elementWiseDivision(const Vector3<Q> &other) const {
+            auto x_ = x / other.x;
+            auto y_ = y / other.y;
+            auto z_ = z / other.y;
+            return Vector3<decltype(x_)>(x_, y_, z_);
+        }
+
 //        template<typename Q>
 //        decltype(auto) pseudoDotProduct(const Vector3<Q> &other) {
 //            return x * other.y - y * other.x;
 //        }
 
-        T lengthSqr() {
+        T lengthSqr() const {
             return x * x + y * y + z * z;
         }
 
-        double length() {
+        double length() const {
             return sqrt(lengthSqr());
         }
 

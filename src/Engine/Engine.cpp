@@ -1,4 +1,4 @@
-#include "Engine/Game.h"
+#include "Engine/Engine.h"
 
 #include "Engine/Render/Environment.h"
 #include "Engine/Render/Window.h"
@@ -6,36 +6,37 @@
 #include "Engine/Render/TextureManager.h"
 #include "Engine/Input/InputManager.h"
 #include "Engine/Input/InputMapper.h"
-#include "Game/Components/PlayerMovementComponent.h"
-#include "Engine/ECS/Entity.h"
+#include "Engine/ECS/ECS.h"
+#include "Engine/Physics/PhysicsSystem.h"
+#include "Game/Entities/Player.h"
+#include "Game/Entities/Box.h"
+#include "Game/Entities/Wall.h"
 
 #include <iostream>
 
 namespace Engine {
-    class Game::Impl {
+    class Engine::Impl {
     public:
-        Impl() {
-
-        }
-
         void init() {
             _environment = new Render::Environment();
             Math::Vector2ui winDimensions = {640, 480};
             _window = new Render::Window("Bachero!", winDimensions, false);
 
+            Render::TextureManager::getInstance()->setDefaultRenderer(_window->getRenderer());
             Input::InputManager::getInstance()->init();
             Input::InputMapper::getInstance()->init();
 
-            auto *entity = ECS::EntityManager::getInstance()->createEntity<ECS::Entity>();
-            auto *texture = Render::TextureManager::getInstance()->
-                    loadTexture("assets/sprite.png",
-                                "player",
-                                _window->getRenderer());
-            entity->addComponent<TransformComponent>();
-            entity->addComponent<Render::SpriteComponent>(texture, Math::Vector2ui(144, 192));
-            entity->getComponent<Render::SpriteComponent>()->frame = {1, 0};
-            entity->addComponent<PlayerMovementComponent>();
-            entity->init();
+            ECS::SystemManager::getInstance()->createSystem<Physics::PhysicsSystem>();
+
+            ECS::EntityManager::getInstance()->createEntity<Player>()->init();
+            ECS::EntityManager::getInstance()->createEntity<Box>(Math::Vector2d{300, 300})->init();
+            ECS::EntityManager::getInstance()->createEntity<Box>(Math::Vector2d{350, 300})->init();
+            ECS::EntityManager::getInstance()->createEntity<Box>(Math::Vector2d{400, 300})->init();
+            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{0, 0}, {640, 10}})->init();
+            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{0, 470}, {640, 10}})->init();
+            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{0, 10}, {10, 460}})->init();
+            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{630, 10}, {10, 460}})->init();
+            ECS::EntityManager::getInstance()->createEntity<Wall>()->init();
         }
 
         void clean() {
@@ -43,6 +44,8 @@ namespace Engine {
                 return;
             _cleaned = true;
 
+            ECS::EntityManager::getInstance()->clean();
+            ECS::SystemManager::getInstance()->clean();
             Input::InputMapper::getInstance()->clean();
             Input::InputManager::getInstance()->clean();
             Render::TextureManager::getInstance()->clean();
@@ -60,6 +63,7 @@ namespace Engine {
         void handleEvents() {
             Input::InputManager::getInstance()->handleEvents();
             Input::InputMapper::getInstance()->handleEvents();
+            ECS::SystemManager::getInstance()->handleEvents();
             ECS::EntityManager::getInstance()->handleEvents();
 
             if (Input::InputManager::getInstance()->onQuit())
@@ -67,6 +71,7 @@ namespace Engine {
         }
 
         void update() {
+            ECS::SystemManager::getInstance()->update();
             ECS::EntityManager::getInstance()->update();
         }
 
@@ -74,45 +79,46 @@ namespace Engine {
             _window->clear();
 
             ECS::EntityManager::getInstance()->render();
+            ECS::SystemManager::getInstance()->render();
 
             _window->present();
         }
 
 
     private:
-        Render::Environment *_environment;
-        Render::Window *_window;
+        Render::Environment *_environment = nullptr;
+        Render::Window *_window = nullptr;
 
         bool _isRunning = true;
         bool _cleaned = false;
     };
 
-    Game::Game()
+    Engine::Engine()
             : _impl(std::make_unique<Impl>()) {}
 
-    void Game::init() {
+    void Engine::init() {
         _impl->init();
     }
 
-    void Game::clean() {
+    void Engine::clean() {
         _impl->clean();
     }
 
-    void Game::handleEvents() {
+    void Engine::handleEvents() {
         _impl->handleEvents();
     }
 
-    void Game::update() {
+    void Engine::update() {
         _impl->update();
     }
 
-    void Game::render() {
+    void Engine::render() {
         _impl->render();
     }
 
-    bool Game::isRunning() {
+    bool Engine::isRunning() {
         return _impl->isRunning();
     }
 
-    Game::~Game() = default;
+    Engine::~Engine() = default;
 }

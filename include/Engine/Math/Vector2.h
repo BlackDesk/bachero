@@ -40,30 +40,43 @@ namespace Engine::Math {
         }
 
         Vector2 &operator-=(const Vector2 &other) {
-            *this += -other;
+            x -= other.x;
+            y -= other.y;
             return *this;
         }
 
-        Vector2 operator-() {
+        Vector2 operator-() const {
             Vector2 result(-x, -y);
             return result;
         }
 
         template<typename Q>
-        decltype(auto) dotProduct(const Vector2<Q> &other) {
+        Vector2 operator/(Q scalar) const {
+            return Vector2(x / scalar, y / scalar);
+        }
+
+        template<typename Q>
+        decltype(auto) dotProduct(const Vector2<Q> &other) const {
             return x * other.x + y * other.y;
         }
 
         template<typename Q>
-        decltype(auto) pseudoDotProduct(const Vector2<Q> &other) {
+        decltype(auto) pseudoDotProduct(const Vector2<Q> &other) const {
             return x * other.y - y * other.x;
         }
 
-        T lengthSqr() {
+        template<typename Q>
+        decltype(auto) elementWiseDivision(const Vector2<Q> &other) const {
+            auto x_ = x / other.x;
+            auto y_ = y / other.y;
+            return Vector2<decltype(x_)>(x_, y_);
+        }
+
+        T lengthSqr() const {
             return x * x + y * y;
         }
 
-        double length() {
+        double length() const {
             return sqrt(lengthSqr());
         }
 

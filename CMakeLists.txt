@@ -25,8 +25,9 @@ include_directories(
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+find_package(SDL2TTF REQUIRED)
 
-include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIRS})
 
 add_subdirectory(libs)
 
@@ -77,7 +78,7 @@ file(GLOB_RECURSE SOURCES
 #----------------------TARGETS---------------------------#
 
 add_executable(bachero main.cpp ${HEADERS} ${SOURCES})
-target_link_libraries(bachero ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+target_link_libraries(bachero ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2TTF_LIBRARY})
 
 #-----------------------TESTS----------------------------#
 
@@ -96,4 +97,5 @@ target_link_libraries(test
         gmock_main
         ${SDL2_LIBRARIES}
         ${SDL2_IMAGE_LIBRARIES}
+        ${SDL2TTF_LIBRARY}
         )

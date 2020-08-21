@@ -6,7 +6,7 @@
 #include "Engine/Render/Sprite.h"
 
 namespace Engine::Render {
-    class SpriteComponent : public ECS::Component {
+    class SpriteComponent : public ECS::DataOnlyComponent {
     public:
         explicit SpriteComponent(Texture *texture) {
             _sprite = std::make_unique<Sprite>(texture);
@@ -24,7 +24,7 @@ namespace Engine::Render {
             _transform = owner->getComponent<TransformComponent>();
         }
 
-        void render() override {
+        void render() {
             if (_transform)
                 _sprite->position = _transform->position;
             _sprite->frame = frame;

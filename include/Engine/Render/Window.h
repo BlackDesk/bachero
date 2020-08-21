@@ -25,6 +25,7 @@ namespace Engine::Render {
     private:
         SDL_Window* _window = nullptr;
         Renderer* _renderer = nullptr;
+        SDL_Rect _wholeWindowRect;
     };
 }
 

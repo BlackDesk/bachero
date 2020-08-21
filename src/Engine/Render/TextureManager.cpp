@@ -13,7 +13,12 @@ namespace Engine::Render {
         return texture;
     }
 
-    Texture * TextureManager::getTexture(const std::string &id) {
+    Texture *TextureManager::loadTexture(const std::filesystem::path &path,
+                                         const std::string &id) {
+        return loadTexture(path, id, _defaultRenderer);
+    }
+
+    Texture *TextureManager::getTexture(const std::string &id) {
         //throws exception if texture with that id is not presented
         return _textureMap.at(id);
     }
@@ -27,5 +32,13 @@ namespace Engine::Render {
         for (auto&[id, texture] : _textureMap)
             delete texture;
         _textureMap.clear();
+    }
+
+    void TextureManager::setDefaultRenderer(Renderer *renderer) {
+        _defaultRenderer = renderer;
+    }
+
+    Renderer *TextureManager::getDefaultRenderer() {
+        return _defaultRenderer;
     }
 }

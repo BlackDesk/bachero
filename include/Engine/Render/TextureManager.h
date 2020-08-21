@@ -12,7 +12,11 @@
 namespace Engine::Render {
     class TextureManager : public Singleton<TextureManager> {
     public:
+        void setDefaultRenderer(Renderer *renderer);
+        Renderer *getDefaultRenderer();
+
         Texture *loadTexture(const std::filesystem::path &path, const std::string &id, Renderer *renderer);
+        Texture *loadTexture(const std::filesystem::path &path, const std::string &id);
 
         Texture *getTexture(const std::string &id);
 
@@ -22,6 +26,7 @@ namespace Engine::Render {
 
     private:
         std::map<std::string, Texture *> _textureMap;
+        Renderer *_defaultRenderer;
     };
 }
 

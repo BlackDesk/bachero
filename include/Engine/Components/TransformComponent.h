@@ -5,9 +5,12 @@
 #include "Engine/Math/Vector2.h"
 
 namespace Engine {
-    class TransformComponent : public ECS::Component {
+    class TransformComponent : public ECS::DataOnlyComponent {
     public:
         Math::Vector2d position;
+
+        explicit TransformComponent(Math::Vector2d initialPos = {0, 0})
+                : position(initialPos) {}
     };
 }
 

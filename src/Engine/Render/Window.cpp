@@ -8,6 +8,10 @@ namespace Engine::Render {
         if (fullscreen)
             flags |= SDL_WINDOW_FULLSCREEN;
 
+        _wholeWindowRect.x = _wholeWindowRect.y = 0;
+        _wholeWindowRect.w = dimensions.x;
+        _wholeWindowRect.h = dimensions.y;
+
         _window = SDL_CreateWindow(
                 title.c_str(),
                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -19,7 +23,6 @@ namespace Engine::Render {
             throwRenderRuntimeExceptionSDL("could not create window: %s\n");
 
         auto *SDL_renderer = SDL_CreateRenderer(_window, -1, 0);
-        SDL_SetRenderDrawColor(SDL_renderer, 255,255,255,255);
 
         if (SDL_renderer == nullptr)
             throwRenderRuntimeExceptionSDL("could not create renderer: %s\n");
@@ -33,6 +36,8 @@ namespace Engine::Render {
 
     void Window::clear() {
         _renderer->clear();
+        SDL_SetRenderDrawColor(_renderer->get(), 255, 255, 255, 255);
+        SDL_RenderFillRect(_renderer->get(), &_wholeWindowRect);
     }
 
     void Window::present() {

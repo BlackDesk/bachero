@@ -4,6 +4,7 @@
 #include "Engine/ECS/Component.h"
 #include "Engine/ECS/Entity.h"
 #include "Engine/Components/TransformComponent.h"
+#include "Engine/Physics/RigidBodyComponent.h"
 #include "Engine/Input/InputMapper.h"
 #include "Engine/Common/DeltaTime.h"
 
@@ -12,20 +13,24 @@ public:
     void init() override {
         if (!owner->hasComponent<Engine::TransformComponent>())
             owner->addComponent<Engine::TransformComponent>();
+        if (!owner->hasComponent<Engine::Physics::RigidBodyComponent>())
+            throw std::runtime_error("PlayerMovement requires RigidBody.");
         _transform = owner->getComponent<Engine::TransformComponent>();
+        _rigidBody = owner->getComponent<Engine::Physics::RigidBodyComponent>();
     }
 
     void handleEvents() override {
-        _movementDir = Engine::Input::InputMapper::getInstance()->getMovementDir();
+//        _rigidBody->applyAcceleration(Engine::Input::InputMapper::getInstance()->getMovementDir() * 10);
+        _rigidBody->velocity = Engine::Input::InputMapper::getInstance()->getMovementDir() * 200;
     }
 
     void update() override {
-        _transform->position += _movementDir * Engine::DeltaTime::get() * 200;
+
     }
 
 private:
-    Engine::Math::Vector2d _movementDir;
     Engine::TransformComponent *_transform = nullptr;
+    Engine::Physics::RigidBodyComponent *_rigidBody = nullptr;
 };
 
 #endif //BACHERO_GAME_COMPONENTS_PLAYER_MOVEMENT_COMPONENT

@@ -1,6 +1,0 @@
-#ifndef BACHERO_GAME_PLAYER
-#define BACHERO_GAME_PLAYER
-
-
-
-#endif //BACHERO_GAME_PLAYER

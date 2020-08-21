@@ -16,6 +16,18 @@ namespace Engine::Math {
         Rect(Vector2<T> pos, Vector2<Q> sz)
                 : position(pos), size(sz) {}
 
+        decltype(auto) midPoint() const {
+            return position + size / 2;
+        }
+
+        decltype(auto) minPoint() const {
+            return position;
+        }
+
+        decltype(auto) maxPoint() const {
+            return position + size;
+        }
+
         template<typename T1, typename Q1>
         operator Rect<T1, Q1>() {
             return Rect<T1, Q1> {Vector2<T1>(position), Vector2<Q1>(size)};

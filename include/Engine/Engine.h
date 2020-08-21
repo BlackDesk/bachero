@@ -1,12 +1,13 @@
-#ifndef BACHERO_GAME_H
-#define BACHERO_GAME_H
+#ifndef BACHERO_ENGINE_H
+#define BACHERO_ENGINE_H
 
+#include "Engine/Common/Singleton.h"
 #include <memory>
 
 namespace Engine {
-    class Game {
+    class Engine : public Singleton<Engine> {
     public:
-        Game();
+        Engine();
 
         void init();
         bool isRunning();
@@ -17,7 +18,7 @@ namespace Engine {
 
         void clean();
 
-        ~Game();
+        ~Engine();
 
     private:
         class Impl;
@@ -25,4 +26,4 @@ namespace Engine {
     };
 }
 
-#endif //BACHERO_GAME_H
+#endif //BACHERO_ENGINE_H

@@ -14,52 +14,51 @@ namespace Engine::ECS {
     class Entity : public GameObject {
     public:
         template<class T>
-        bool hasComponent() {
+        bool hasComponent() const {
             return _presence[getComponentTypeID<T>()];
         }
 
         template<class ...Ts>
-        bool hasComponents() {
-            static std::vector<ComponentTypeID> ids{
-                    getComponentTypeID<Ts>()...
-            };
+        bool hasComponents() const {
+            static auto mask = _genComponentsMask<Ts...>();
 
-            bool res = true;
-            for (auto &id : ids)
-                res &= _presence[id];
-
-            return res;
+            return mask == (mask & _presence);
         }
 
         template<class T>
-        T *getComponent() {
-            auto id = getComponentTypeID<T>();
+        T *getComponent() const {
+            static auto id = getComponentTypeID<T>();
+
             if (!_presence[id])
                 throw std::runtime_error("Entity doesn't have that component.");
-            return static_cast<T *>(_components[id].get());
+
+            return _getComponent<T>(Int2Type<getComponentEnumType<T>()>());
         }
 
         template<class T, typename ...Args>
         void addComponent(Args &&...args) {
-            auto id = getComponentTypeID<T>();
+            static auto id = getComponentTypeID<T>();
+
             if (_presence[id])
                 throw std::runtime_error("Entity already has that component.");
             _presence.set(id);
-            _components[id] = std::make_unique<T>(std::forward<Args>(args)...);
-            _components[id]->owner = this;
+
+            _addComponent<T>(Int2Type<getComponentEnumType<T>()>(), std::forward<Args>(args)...);
         }
 
         template<class T>
         void removeComponent() {
-            auto id = getComponentTypeID<T>();
+            static auto id = getComponentTypeID<T>();
             if (!_presence[id])
                 throw std::runtime_error("Entity doesn't have that component.");
             _presence.reset(id);
-            //replacing with empty ptr, the previous will be destroyed
-            _components[id] = std::unique_ptr<T>();
+            _removeComponent<T>(Int2Type<getComponentEnumType<T>()>());
         }
 
         virtual void init() {
+            for (auto &component : _dataOnlyComponents)
+                if (component)
+                    component->init();
             for (auto &component : _components)
                 if (component)
                     component->init();
@@ -92,10 +91,73 @@ namespace Engine::ECS {
         }
 
     private:
-        static const size_t _maxComponents = 32;
+        template<int I>
+        struct Int2Type {
+            enum { value = I };
+        };
+
+        template<class T>
+        T *_getComponent(Int2Type<ComponentEnumType::Behavioral>) const {
+            static auto id = getComponentTypeID<T>();
+            return static_cast<T *>(_components[id].get());
+        }
+
+        template<class T>
+        T *_getComponent(Int2Type<ComponentEnumType::DataOnly>) const {
+            static auto id = getComponentTypeID<T>();
+            return static_cast<T *>(_dataOnlyComponents[id].get());
+        }
+
+        template<class T, typename ...Args>
+        void _addComponent(Int2Type<ComponentEnumType::Behavioral>, Args &&...args) {
+            static auto id = getComponentTypeID<T>();
+
+            _components[id] = std::make_unique<T>(std::forward<Args>(args)...);
+            _components[id]->owner = this;
+        }
+
+        template<class T, typename ...Args>
+        void _addComponent(Int2Type<ComponentEnumType::DataOnly>, Args &&...args) {
+            static auto id = getComponentTypeID<T>();
+
+            _dataOnlyComponents[id] = std::make_unique<T>(std::forward<Args>(args)...);
+            _dataOnlyComponents[id]->owner = this;
+        }
+
+        template<class T>
+        void _removeComponent(Int2Type<ComponentEnumType::Behavioral>) {
+            static auto id = getComponentTypeID<T>();
+            //replacing with empty ptr, the previous will be destroyed
+            _components[id] = std::unique_ptr<T>();
+        }
+
+        template<class T>
+        void _removeComponent(Int2Type<ComponentEnumType::DataOnly>) {
+            static auto id = getComponentTypeID<T>();
+            //replacing with empty ptr, the previous will be destroyed
+            _dataOnlyComponents[id] = std::unique_ptr<T>();
+        }
+
+        static const size_t _maxComponents = 32 ;
         typedef std::array<std::unique_ptr<Component>, _maxComponents> ComponentsArray;
+        typedef std::array<std::unique_ptr<DataOnlyComponent>, _maxComponents> DataOnlyComponentsArray;
         typedef std::bitset<_maxComponents> ComponentsBitset;
+
+        template<typename ...Ts>
+        static ComponentsBitset _genComponentsMask() {
+            static std::vector<ComponentTypeID> ids{
+                    getComponentTypeID<Ts>()...
+            };
+
+            ComponentsBitset bitset;
+            for (auto id : ids)
+                bitset.set(id);
+
+            return bitset;
+        }
+
         ComponentsArray _components;
+        DataOnlyComponentsArray _dataOnlyComponents;
         ComponentsBitset _presence;
 
         bool _isActive = true;
@@ -110,7 +172,26 @@ namespace Engine::ECS {
             return entity;
         }
 
-        //O(n) sadly
+        template<typename ...Ts>
+        std::vector<Entity *> getEntitiesThatHaveComponents() {
+            std::vector<Entity *> result;
+            for (auto &entity : _entities)
+                if (entity->isActive() && entity->hasComponents<Ts...>())
+                    result.emplace_back(entity.get());
+            return result;
+        }
+
+        //more optimized way to retrieve one component
+        template<typename T>
+        std::vector<Entity *> getEntitiesThatHaveComponent() {
+            std::vector<Entity *> result;
+            for (auto &entity : _entities)
+                if (entity->isActive() && entity->hasComponent<T>())
+                    result.emplace_back(entity.get());
+            return result;
+        }
+
+        //O(n) at max and on average, sadly
         void refresh() {
             _entities.erase(std::remove_if(_entities.begin(), _entities.end(),
                                            [](auto &ptr) {
@@ -131,6 +212,10 @@ namespace Engine::ECS {
         void render() {
             for (auto &entity : _entities)
                 entity->render();
+        }
+
+        void clean() {
+            _entities.clear();
         }
 
     private:
