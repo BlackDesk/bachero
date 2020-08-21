@@ -55,7 +55,7 @@ namespace Engine::ECS {
             _removeComponent<T>(Int2Type<getComponentEnumType<T>()>());
         }
 
-        virtual void init() {
+        virtual void init() final {
             for (auto &component : _dataOnlyComponents)
                 if (component)
                     component->init();
@@ -64,29 +64,29 @@ namespace Engine::ECS {
                     component->init();
         }
 
-        void handleEvents() override {
+        void handleEvents() final {
             for (auto &component : _components)
                 if (component)
                     component->handleEvents();
         }
 
-        void update() override {
+        void update() final {
             for (auto &component : _components)
                 if (component)
                     component->update();
         }
 
-        void render() override {
+        void render() final {
             for (auto &component : _components)
                 if (component)
                     component->render();
         }
 
-        virtual void destroy() {
+        virtual void destroy() final {
             _isActive = false;
         }
 
-        virtual bool isActive() {
+        virtual bool isActive() final {
             return _isActive;
         }
 

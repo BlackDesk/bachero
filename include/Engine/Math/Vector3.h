@@ -1,6 +1,8 @@
 #ifndef BACHERO_VECTOR3_H
 #define BACHERO_VECTOR3_H
 
+#include <cmath>
+
 namespace Engine::Math {
     template<typename T>
     class Vector3 {

@@ -1,42 +1,34 @@
 #include "Engine/Engine.h"
 
+#include "Engine/ECS/ECS.h"
 #include "Engine/Render/Environment.h"
 #include "Engine/Render/Window.h"
-#include "Engine/Render/SpriteComponent.h"
 #include "Engine/Render/TextureManager.h"
 #include "Engine/Input/InputManager.h"
 #include "Engine/Input/InputMapper.h"
-#include "Engine/ECS/ECS.h"
 #include "Engine/Physics/PhysicsSystem.h"
-#include "Game/Entities/Player.h"
-#include "Game/Entities/Box.h"
-#include "Game/Entities/Wall.h"
+#include "Engine/Common/DebugWidget.h"
 
 #include <iostream>
 
 namespace Engine {
     class Engine::Impl {
     public:
-        void init() {
+        void init(const std::string& title,
+                  Math::Vector2d winDimensions,
+                  bool fullscreen) {
             _environment = new Render::Environment();
-            Math::Vector2ui winDimensions = {640, 480};
-            _window = new Render::Window("Bachero!", winDimensions, false);
+            _window = new Render::Window(title, winDimensions, false);
 
             Render::TextureManager::getInstance()->setDefaultRenderer(_window->getRenderer());
             Input::InputManager::getInstance()->init();
             Input::InputMapper::getInstance()->init();
 
+            _debugWidget = new DebugWidget();
+
             ECS::SystemManager::getInstance()->createSystem<Physics::PhysicsSystem>();
 
-            ECS::EntityManager::getInstance()->createEntity<Player>()->init();
-            ECS::EntityManager::getInstance()->createEntity<Box>(Math::Vector2d{300, 300})->init();
-            ECS::EntityManager::getInstance()->createEntity<Box>(Math::Vector2d{350, 300})->init();
-            ECS::EntityManager::getInstance()->createEntity<Box>(Math::Vector2d{400, 300})->init();
-            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{0, 0}, {640, 10}})->init();
-            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{0, 470}, {640, 10}})->init();
-            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{0, 10}, {10, 460}})->init();
-            ECS::EntityManager::getInstance()->createEntity<Wall>(Math::Rect_d{{630, 10}, {10, 460}})->init();
-            ECS::EntityManager::getInstance()->createEntity<Wall>()->init();
+            std::cout << "Engine init success." << std::endl;
         }
 
         void clean() {
@@ -50,10 +42,13 @@ namespace Engine {
             Input::InputManager::getInstance()->clean();
             Render::TextureManager::getInstance()->clean();
 
+            delete _debugWidget;
             delete _window;
 
             //must be deleted the last
             delete _environment;
+
+            std::cout << "Engine clean success." << std::endl;
         }
 
         bool isRunning() const {
@@ -71,6 +66,7 @@ namespace Engine {
         }
 
         void update() {
+            _debugWidget->update();
             ECS::SystemManager::getInstance()->update();
             ECS::EntityManager::getInstance()->update();
         }
@@ -81,11 +77,14 @@ namespace Engine {
             ECS::EntityManager::getInstance()->render();
             ECS::SystemManager::getInstance()->render();
 
+            _debugWidget->render();
+
             _window->present();
         }
 
 
     private:
+        DebugWidget *_debugWidget = nullptr;
         Render::Environment *_environment = nullptr;
         Render::Window *_window = nullptr;
 
@@ -96,8 +95,10 @@ namespace Engine {
     Engine::Engine()
             : _impl(std::make_unique<Impl>()) {}
 
-    void Engine::init() {
-        _impl->init();
+    void Engine::init(const std::string& title,
+                      Math::Vector2d winDimensions,
+                      bool fullscreen) {
+        _impl->init(title, winDimensions, fullscreen);
     }
 
     void Engine::clean() {

@@ -2,6 +2,7 @@
 #define BACHERO_VECTOR2_H
 
 #include "Vector3.h"
+#include <cmath>
 
 namespace Engine::Math {
     template<typename T>

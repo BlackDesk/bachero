@@ -14,7 +14,7 @@ namespace Engine::ECS {
 
     typedef std::size_t ComponentTypeID;
 
-    ComponentTypeID getComponentTypeID() {
+    inline ComponentTypeID getComponentTypeID() {
         static ComponentTypeID id = 0;
         return id++;
     }

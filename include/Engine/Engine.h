@@ -2,6 +2,8 @@
 #define BACHERO_ENGINE_H
 
 #include "Engine/Common/Singleton.h"
+#include "Engine/Math/Vector2.h"
+
 #include <memory>
 
 namespace Engine {
@@ -9,7 +11,9 @@ namespace Engine {
     public:
         Engine();
 
-        void init();
+        void init(const std::string& title,
+                  Math::Vector2d winDimensions,
+                  bool fullscreen);
         bool isRunning();
 
         void handleEvents();

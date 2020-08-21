@@ -37,8 +37,8 @@ namespace Engine::Physics {
             Math::Rect_d mBoxA = boxA;
             Math::Rect_d mBoxB = boxB;
 
-            mBoxA.position += rigidA->velocity * dt;
-            mBoxB.position += rigidB->velocity * dt;
+//            mBoxA.position += rigidA->velocity * dt;
+//            mBoxB.position += rigidB->velocity * dt;
 
             // Vector from A to B
             auto n = mBoxA.midPoint() - mBoxB.midPoint();
@@ -88,7 +88,7 @@ namespace Engine::Physics {
             if (rigidA->invMass + rigidB->invMass == 0)
                 return;
 
-            const float posCorrectionRate = 0.8;
+            const float posCorrectionRate = 0.99;
 
             float correction = penetration * posCorrectionRate /
                                (rigidA->invMass + rigidB->invMass);
@@ -109,7 +109,9 @@ namespace Engine::Physics {
                 return;
 
             double e = std::min(rigidA->restitution, rigidB->restitution);
-            double j = -(1 + e) * velAlongNormal;
+            double maxPenetration = std::max(boxA.size.x + boxB.size.x,
+                                             boxA.size.y + boxB.size.y);
+            double j = -(1.05 + e) * velAlongNormal * (1 + penetration / maxPenetration);
 
             j /= rigidA->invMass + rigidB->invMass;
             auto impulse = j * normal;
@@ -150,6 +152,7 @@ namespace Engine::Physics {
                 rigid->integrateAcceleration(dt);
             }
 
+            std::vector<Manifold> collisions;
             _collidersToDraw.resize(bodies.size());
             for (size_t i = 0; i < bodies.size(); ++i) {
                 auto &bodyA = bodies[i];
@@ -157,9 +160,10 @@ namespace Engine::Physics {
                     auto &bodyB = bodies[j];
                     Manifold manifold(bodyA, bodyB);
                     if (manifold.detect()) {
+                        collisions.push_back(manifold);
                         std::get<1>(_collidersToDraw[i]) = true;
                         std::get<1>(_collidersToDraw[j]) = true;
-                        manifold.resolve();
+//                        manifold.resolve();
                     }
                 }
             }
@@ -169,14 +173,16 @@ namespace Engine::Physics {
                 rigid->integrateVelocity(dt);
             }
 
-            for (int iter = 0; iter < 5; ++iter) {
+            for (int iter = 0; iter < 15; ++iter) {
                 for (size_t i = 0; i < bodies.size(); ++i) {
                     auto &bodyA = bodies[i];
                     for (size_t j = i + 1; j < bodies.size(); ++j) {
                         auto &bodyB = bodies[j];
                         Manifold manifold(bodyA, bodyB);
-                        if (manifold.detect())
+                        if (manifold.detect()) {
+                            manifold.resolve();
                             manifold.positionalCorrection();
+                        }
                     }
                 }
             }
