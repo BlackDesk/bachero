@@ -1,0 +1,1 @@
+cloc --exclude-dir=cmake,assets,cmake-build-debug,cmake-build-release,.git,.idea .

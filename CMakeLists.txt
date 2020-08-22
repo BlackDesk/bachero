@@ -6,12 +6,19 @@ project(bachero)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
-set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${PROJECT_SOURCE_DIR}/,,$(abspath $<))\"'")
 
 if (DEBUG_LEVEL)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+
     add_definitions(-DDEBUG_LEVEL=${DEBUG_LEVEL})
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 endif()
 
 #----------------------INCLUDE---------------------------#
@@ -86,7 +93,7 @@ file(GLOB_RECURSE TESTS
         "${PROJECT_SOURCE_DIR}/test/*.h"
         "${PROJECT_SOURCE_DIR}/test/*.cpp"
         )
-add_executable(test ${TESTS})
+add_executable(test ${TESTS} ${HEADERS} ${SOURCES})
 
 target_include_directories(test PRIVATE
         "${PROJECT_SOURCE_DIR}/test"

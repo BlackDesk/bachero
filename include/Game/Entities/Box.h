@@ -11,7 +11,7 @@ public:
         addComponent<Engine::TransformComponent>(position);
         addComponent<Engine::Physics::ColliderComponent>(Engine::Math::Rect_i{
                 Engine::Math::Vector2i(0, 0),
-                Engine::Math::Vector2ui(50, 50),
+                Engine::Math::Vector2ui(10, 10),
         });
         addComponent<Engine::Physics::RigidBodyComponent>(20, 0.5, 0.5);
     }

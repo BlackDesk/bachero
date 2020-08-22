@@ -4,6 +4,7 @@
 #include "Game/Components/PlayerMovementComponent.h"
 #include "Engine/Components/TransformComponent.h"
 #include "Engine/Render/SpriteComponent.h"
+#include "Engine/Render/TextureManager.h"
 #include "Engine/Physics/ColliderComponent.h"
 #include "Engine/Physics/RigidBodyComponent.h"
 #include "Engine/ECS/Entity.h"
