@@ -1,3 +1,5 @@
+//Thanks to https://github.com/JamesRandall/SimpleVoxelEngine/blob/master/voxelEngine/src/AABBTree.cpp
+
 #include <iostream>
 #include "Engine/Physics/AABBTree.h"
 
@@ -98,7 +100,6 @@ namespace Engine::Physics {
 
             //doing allocation in the beginning to avoid dangling references
             NodeId holderId = _allocateNode();
-            Node &holder = nodes[holderId];
 
             //vector might have been reallocated
             //so it is obligatory to extract reference here
@@ -140,29 +141,8 @@ namespace Engine::Physics {
                     break;
                 curId = (costLeft < costRight ? leftId : rightId);
             }
-            Node &cur = nodes[curId];
 
-            //replacing
-            holder.leaf = false;
-            auto pId = cur.parent;
-            holder.parent = pId;
-
-            holder.left = nodeId;
-            holder.right = curId;
-
-            node.parent = holderId;
-            cur.parent = holderId;
-
-            //fixing parent links
-            if (holder.parent == NullNode) {
-                root = holderId;
-            } else {
-                auto &parent = nodes[holder.parent];
-                if (parent.left == curId)
-                    parent.left = holderId;
-                else
-                    parent.right = holderId;
-            }
+            _insertLeafInPlace(nodeId, curId, holderId);
 
             _fixUpwards(holderId);
         }
@@ -260,6 +240,36 @@ namespace Engine::Physics {
         std::vector<Node> nodes;
         //making it global not to loose capacity
         std::vector<NodeId> traverseStack;
+
+        inline void _insertLeafInPlace(NodeId nodeId, NodeId siblingId, NodeId holderId) {
+            //holder becomes parent of node and its sibling
+
+            Node &node = nodes[nodeId];
+            Node &holder = nodes[holderId];
+            Node &sibling = nodes[siblingId];
+
+            //replacing
+            holder.leaf = false;
+            auto pId = sibling.parent;
+            holder.parent = pId;
+
+            holder.left = nodeId;
+            holder.right = siblingId;
+
+            node.parent = holderId;
+            sibling.parent = holderId;
+
+            //fixing parent links
+            if (holder.parent == NullNode) {
+                root = holderId;
+            } else {
+                auto &parent = nodes[holder.parent];
+                if (parent.left == siblingId)
+                    parent.left = holderId;
+                else
+                    parent.right = holderId;
+            }
+        }
 
         inline void _fillLeafWithData(NodeId id, void *data, AABB aabb) {
             auto &node = nodes[id];

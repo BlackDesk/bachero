@@ -12,10 +12,6 @@ namespace Engine::Physics {
                 : mass(_mass), invMass(_mass > 0.0f ? 1.0f / _mass : 0.0f),
                   restitution(_restitution), friction(_friction) {}
 
-        Math::Rect_i getBoundingBox() {
-            return _boundingBox;
-        }
-
         void init() override {
             if (!owner->hasComponent<TransformComponent>())
                 owner->addComponent<TransformComponent>();
@@ -46,6 +42,9 @@ namespace Engine::Physics {
                 return;
 
             _transform->position += velocity * dt;
+
+            if (!lockedRotation)
+                _transform->rotation += angularVelocity * dt;
         }
 
         void integrateAcceleration(double dt) {
@@ -59,14 +58,20 @@ namespace Engine::Physics {
             return mass == 0.0f;
         };
 
+        Math::Vector2f acceleration;
+        Math::Vector2f velocity;
+
         const float mass;
         const float invMass;
         const float restitution;
         const float friction;
-        Math::Vector2d acceleration, velocity;
+
+        float torque = 0;
+        float angularVelocity = 0;
+
+        bool lockedRotation = false;
 
     private:
-        Math::Rect_i _boundingBox;
         TransformComponent *_transform = nullptr;
         ColliderComponent *_collider = nullptr;
     };

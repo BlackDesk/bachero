@@ -9,6 +9,7 @@
 #include "Engine/Common/DeltaTime.h"
 #include "Engine/Physics/AABBTree.h"
 #include "Engine/Physics/Manifold.h"
+#include "Engine/Render/RenderUtils.h"
 
 #include <iostream>
 
@@ -75,13 +76,6 @@ namespace Engine::Physics {
 //                std::cout << targets.size() << "\n";
             }
 
-            for (auto &body : bodies) {
-                auto *rigid = body->getComponent<RigidBodyComponent>();
-                rigid->integrateVelocity(dt);
-            }
-
-            updateTree(bodies);
-
             for (int iter = 0; iter < 5; ++iter) {
                 for (ECS::Entity *bodyA : bodies) {
                     Math::Rect_d boxA = bodyA->getComponent<ColliderComponent>()->getPositionedBB();
@@ -101,15 +95,21 @@ namespace Engine::Physics {
                 updateTree(bodies);
             }
 
+            for (auto &body : bodies) {
+                auto *rigid = body->getComponent<RigidBodyComponent>();
+                rigid->integrateVelocity(dt);
+            }
+
+            updateTree(bodies);
+
             for (size_t i = 0; i < bodies.size(); ++i) {
                 auto &body = bodies[i];
                 auto *rigid = body->getComponent<RigidBodyComponent>();
+                auto *collider = body->getComponent<ColliderComponent>();
 
-                Math::Rect_d box = body->getComponent<ColliderComponent>()->getPositionedBB();
-
-                auto box_ = (SDL_Rect) box;
                 rigid->acceleration = {0, 0};
-                std::get<0>(_collidersToDraw[i]) = box_;
+                rigid->torque = 0;
+                std::get<0>(_collidersToDraw[i]) = collider;
             }
         }
 
@@ -117,22 +117,22 @@ namespace Engine::Physics {
             auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
             auto *sdlRenderer = renderer->get();
 
-//            AABBTreeSDLVisualizer viz(sdlRenderer);
-//            _tree.visualize(viz);
+            AABBTreeSDLVisualizer viz(sdlRenderer);
+            _tree.visualize(viz);
 
-            for (auto[rect, color] : _collidersToDraw) {
+            for (auto[collider, color] : _collidersToDraw) {
+                Math::Vector2f p1, p2, p3, p4;
+                collider->getCorners(p1, p2, p3, p4);
+
+                Render::drawCircle(renderer, {255, 0, 0, 255},
+                                   collider->getOrigin(), 2);
+
                 if (color)
-                    SDL_SetRenderDrawColor(
-                            sdlRenderer,
-                            255, 0, 0, 255);
+                    Render::drawQuadrangle(renderer, {255, 0, 0, 255},
+                                           p1, p2, p3, p4);
                 else
-                    SDL_SetRenderDrawColor(
-                            sdlRenderer,
-                            0, 255, 0, 255);
-
-                SDL_RenderDrawRect(
-                        sdlRenderer,
-                        &rect);
+                    Render::drawQuadrangle(renderer, {0, 255, 0, 255},
+                                           p1, p2, p3, p4);
             }
         }
 
@@ -140,7 +140,7 @@ namespace Engine::Physics {
         AABBTree _tree;
         std::size_t _tickCounter = 0;
         const std::size_t _treeRebuildTicks = 60;
-        std::vector<std::tuple<SDL_Rect, bool>> _collidersToDraw;
+        std::vector<std::tuple<ColliderComponent *, bool>> _collidersToDraw;
 
         void rebuildTree(const std::vector<ECS::Entity *> &bodies) {
             _tree.clear();

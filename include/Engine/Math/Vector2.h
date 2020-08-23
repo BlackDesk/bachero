@@ -9,6 +9,7 @@ namespace Engine::Math {
     class Vector2 {
     public:
         explicit Vector2() = default;
+
         Vector2(const T &_x, const T &_y) : x(_x), y(_y) {};
 
         operator Vector3<T>() {
@@ -125,6 +126,7 @@ namespace Engine::Math {
     }
 
     typedef Vector2<double> Vector2d;
+    typedef Vector2<float> Vector2f;
     typedef Vector2<int> Vector2i;
     typedef Vector2<unsigned int> Vector2ui;
 

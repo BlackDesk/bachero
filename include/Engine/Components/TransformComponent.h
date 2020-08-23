@@ -7,10 +7,12 @@
 namespace Engine {
     class TransformComponent : public ECS::DataOnlyComponent {
     public:
-        Math::Vector2d position;
+        Math::Vector2f position;
+        float rotation = 0;
 
-        explicit TransformComponent(Math::Vector2d initialPos = {0, 0})
-                : position(initialPos) {}
+        explicit TransformComponent(Math::Vector2f initialPos = {0, 0},
+                                    float initialRot = 0)
+                : position(initialPos), rotation(initialRot) {}
     };
 }
 

@@ -16,8 +16,8 @@ public:
                 loadTexture("assets/sprite.png",
                             "player");
         addComponent<Engine::TransformComponent>();
-        addComponent<Engine::Render::SpriteComponent>(texture, Engine::Math::Vector2ui(144, 192));
-        getComponent<Engine::Render::SpriteComponent>()->frame = {1, 0};
+//        addComponent<Engine::Render::SpriteComponent>(texture, Engine::Math::Vector2ui(144, 192));
+//        getComponent<Engine::Render::SpriteComponent>()->frame = {1, 0};
         addComponent<PlayerMovementComponent>();
         addComponent<Engine::Physics::ColliderComponent>(Engine::Math::Rect_i{
             Engine::Math::Vector2i(20, 152),
