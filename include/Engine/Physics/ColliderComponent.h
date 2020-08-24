@@ -24,6 +24,11 @@ namespace Engine::Physics {
         }
 
         Math::Rect_f getPositionedBB() const {
+            if (abs(_transform->rotation) <= 1e-7) {
+                auto bb = _boundingBox;
+                bb.position += _transform->position;
+                return bb;
+            }
 
             Math::Vector2f p1, p2, p3, p4;
             getCorners(p1, p2, p3, p4);
@@ -51,7 +56,7 @@ namespace Engine::Physics {
             p4 = mat * p4 + objPos;
         }
 
-        Math::Vector2f getOrigin() const {
+        Math::Vector2f getAnchorPoint() const {
             return _transform->position;
         }
 
