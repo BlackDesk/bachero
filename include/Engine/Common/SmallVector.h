@@ -112,10 +112,7 @@ namespace Engine {
         class Iterator : public std::iterator<std::random_access_iterator_tag, T> {
         public:
             Iterator &operator++() { //prefix
-                if (_iterator.index())
-                    ++std::get<HeapIter>(_iterator);
-                else
-                    ++std::get<StackIter>(_iterator);
+                ++_pnt;
                 return *this;
             }
 
@@ -126,10 +123,7 @@ namespace Engine {
             }
 
             Iterator &operator--() { //prefix
-                if (_iterator.index())
-                    --std::get<HeapIter>(_iterator);
-                else
-                    --std::get<StackIter>(_iterator);
+                --_pnt;
             }
 
             Iterator operator--(int) { //postfix
@@ -151,72 +145,56 @@ namespace Engine {
             }
 
             int operator-(const Iterator &other) const {
-                if (_iterator.index())
-                    return std::get<HeapIter>(_iterator) - std::get<HeapIter>(other._iterator);
-                else
-                    return std::get<StackIter>(_iterator) - std::get<StackIter>(other._iterator);
+                return _pnt - other._pnt;
             }
 
             Iterator &operator+=(int shift) {
-                if (_iterator.index())
-                    std::get<HeapIter>(_iterator) += shift;
-                else
-                    std::get<StackIter>(_iterator) += shift;
+                _pnt += shift;
                 return *this;
             }
 
             Iterator &operator-=(int shift) {
-                if (_iterator.index())
-                    std::get<HeapIter>(_iterator) -= shift;
-                else
-                    std::get<StackIter>(_iterator) -= shift;
+                _pnt -= shift;
                 return *this;
             }
 
             bool operator==(const Iterator &other) const {
-                return _iterator == other._iterator;
+                return _pnt == other._pnt;
             }
 
             bool operator!=(const Iterator &other) const {
-                return _iterator != other._iterator;
+                return _pnt != other._pnt;
             }
 
             bool operator<(const Iterator &other) const {
-                if (_iterator.index())
-                    return std::get<HeapIter>(_iterator) < std::get<HeapIter>(other._iterator);
-                else
-                    return std::get<StackIter>(_iterator) < std::get<StackIter>(other._iterator);
+                return _pnt < other._pnt;
             }
 
             bool operator<=(const Iterator &other) const {
-                return *this < other || *this == other;
+                return _pnt <= other._pnt;
             }
 
             bool operator>(const Iterator &other) const {
-                return other < *this;
+                return _pnt > other._pnt;
             }
 
             bool operator>=(const Iterator &other) const {
-                return other <= *this;
+                return _pnt >= other._pnt;
             }
 
             T &operator*() {
-                if (_iterator.index())
-                    return *std::get<HeapIter>(_iterator);
-                else
-                    return *std::get<StackIter>(_iterator);
+                return *_pnt;
+            }
+
+            T *operator->() {
+                return _pnt;
             }
 
         private:
-            std::variant<StackIter, HeapIter> _iterator;
+            T *_pnt = 0;
 
-            Iterator(SmallVector *vector, StackIter it)
-                    : vec(vector), _iterator(it) {}
-
-            Iterator(SmallVector *vector, HeapIter it)
-                    : vec(vector), _iterator(it) {}
-
-            SmallVector *vec;
+            explicit Iterator(T *pnt)
+                    : _pnt(pnt) {}
 
             friend SmallVector;
         };
@@ -225,33 +203,35 @@ namespace Engine {
 
         Iterator begin() {
             if (data.index())
-                return Iterator(this, std::get<Heap>(data).begin());
+                return Iterator(std::get<Heap>(data).data());
             else
-                return Iterator(this, std::get<Stack>(data).first.begin());
+                return Iterator(std::get<Stack>(data).first.data());
         }
 
         Iterator end() {
             if (data.index()) {
-                return Iterator(this, std::get<Heap>(data).end());
+                auto &heap = std::get<Heap>(data);
+                return Iterator(heap.data() + heap.size());
             } else {
                 auto&[stack, n] = std::get<Stack>(data);
-                return Iterator(this, stack.begin() + n);
+                return Iterator(stack.data() + n);
             }
         }
 
         ConstIterator begin() const {
             if (data.index())
-                return Iterator(this, std::get<Heap>(data).begin());
+                return Iterator(std::get<Heap>(data).data());
             else
-                return Iterator(this, std::get<Stack>(data).first.begin());
+                return Iterator(std::get<Stack>(data).first.data());
         }
 
         ConstIterator end() const {
             if (data.index()) {
-                return Iterator(this, std::get<Heap>(data).end());
+                const auto &heap = std::get<Heap>(data);
+                return Iterator(heap.data() + heap.size());
             } else {
                 const auto&[stack, n] = std::get<Stack>(data);
-                return Iterator(this, stack.begin() + n);
+                return Iterator(stack.data() + n);
             }
         }
     };
