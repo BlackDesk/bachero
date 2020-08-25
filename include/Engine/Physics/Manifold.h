@@ -28,13 +28,9 @@ namespace Engine::Physics {
     //needed to store pairs
     class ManifoldKey {
     public:
-        ManifoldKey(ECS::Entity *ent1, ECS::Entity *ent2) {
-            if (ent1 > ent2)
-                std::swap(ent1, ent2);
-
-            bodyA = ent1;
-            bodyB = ent2;
-        }
+        ManifoldKey(ECS::Entity *ent1, ECS::Entity *ent2)
+                : bodyA(ent1 <= ent2 ? ent1 : ent2),
+                  bodyB(ent1 <= ent2 ? ent2 : ent1) {}
 
         bool operator<(const ManifoldKey &other) const {
             if (bodyA != other.bodyA)
@@ -43,9 +39,16 @@ namespace Engine::Physics {
                 return bodyB < other.bodyB;
         }
 
-    private:
-        ECS::Entity *bodyA = nullptr;
-        ECS::Entity *bodyB = nullptr;
+        bool operator==(const ManifoldKey &other) const {
+            return bodyA == other.bodyA && bodyB == other.bodyB;
+        }
+
+        bool operator!=(const ManifoldKey &other) const {
+            return !(*this == other);
+        }
+
+        const ECS::Entity *bodyA = nullptr;
+        const ECS::Entity *bodyB = nullptr;
     };
 
     class Manifold {
@@ -425,6 +428,19 @@ namespace Engine::Physics {
     public:
         Contact contacts[2];
         std::size_t contactsNum = 0;
+    };
+}
+
+namespace std {
+    template<>
+    struct std::hash<Engine::Physics::ManifoldKey> {
+        inline std::size_t operator()(const Engine::Physics::ManifoldKey& key) const {
+            auto first = hash<std::size_t>{}(reinterpret_cast<std::size_t>(key.bodyA));
+            auto second = hash<std::size_t>{}(reinterpret_cast<std::size_t>(key.bodyB));
+            //boost like hash
+            std::size_t seed = first;
+            return seed ^ (second + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+        }
     };
 }
 

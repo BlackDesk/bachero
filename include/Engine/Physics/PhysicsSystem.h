@@ -11,8 +11,10 @@
 #include "Engine/Physics/AABBTree.h"
 #include "Engine/Physics/Manifold.h"
 #include "Engine/Render/RenderUtils.h"
+#include "Engine/Common/HashMap.h"
 
 #include <iostream>
+#include <unordered_map>
 
 namespace Engine::Physics {
     class AABBTreeSDLVisualizer : public AABBTreeVisualizer {
@@ -94,7 +96,7 @@ namespace Engine::Physics {
         std::size_t _tickCounter = 0;
         const std::size_t _treeRebuildTicks = 60;
         std::vector<ECS::Entity *> _bodies;
-        std::map<ManifoldKey, Manifold> _manifolds;
+        HashMap<ManifoldKey, Manifold> _manifolds;
 
         void getBodies() {
             ECS::EntityManager::getInstance()->

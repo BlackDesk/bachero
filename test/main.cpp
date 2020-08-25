@@ -2,6 +2,7 @@
 #include "gmock/gmock.h"
 
 #include "Engine/Common/SmallVectorTest.h"
+#include "Engine/Common/HashMapTest.h"
 #include "Engine/Physics/AABBTreeTest.h"
 
 int main(int argc, char **argv) {
