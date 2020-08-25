@@ -8,6 +8,7 @@
 #include "Engine/Input/InputMapper.h"
 #include "Engine/Physics/PhysicsSystem.h"
 #include "Engine/Common/DebugWidget.h"
+#include "Engine/Common/DebugMode.h"
 
 #include <iostream>
 
@@ -64,6 +65,11 @@ namespace Engine {
             ECS::SystemManager::getInstance()->handleEvents();
             ECS::EntityManager::getInstance()->handleEvents();
 
+            if (Input::InputManager::getInstance()->onKeyUp(SDL_SCANCODE_LEFTBRACKET))
+                _debugWidgetEnabled = !_debugWidgetEnabled;
+            if (Input::InputManager::getInstance()->onKeyUp(SDL_SCANCODE_RIGHTBRACKET))
+                DebugMode::toggle();
+
             if (Input::InputManager::getInstance()->onQuit())
                 _isRunning = false;
         }
@@ -86,7 +92,8 @@ namespace Engine {
             ECS::EntityManager::getInstance()->render();
             ECS::SystemManager::getInstance()->render();
 
-            _debugWidget->render();
+            if (_debugWidgetEnabled)
+                _debugWidget->render();
 
             _window->present();
         }
@@ -97,6 +104,7 @@ namespace Engine {
         Render::Environment *_environment = nullptr;
         Render::Window *_window = nullptr;
 
+        bool _debugWidgetEnabled = false;
         bool _isRunning = true;
         bool _cleaned = false;
     };

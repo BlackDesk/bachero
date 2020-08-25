@@ -7,6 +7,7 @@
 #include "Engine/Render/Text.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Common/DeltaTime.h"
+#include "Engine/Common/DebugMode.h"
 #include "Engine/Physics/AABBTree.h"
 #include "Engine/Physics/Manifold.h"
 #include "Engine/Render/RenderUtils.h"
@@ -59,36 +60,39 @@ namespace Engine::Physics {
         }
 
         void render() override {
-            auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
-            auto *sdlRenderer = renderer->get();
+            if (DebugMode::isEnabled()) {
+                auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
+                auto *sdlRenderer = renderer->get();
 
 //            AABBTreeSDLVisualizer viz(sdlRenderer);
 //            _tree.visualize(viz);
 
-            for (auto[collider, color] : _collidersToDraw) {
-                Math::Vector2f p1, p2, p3, p4;
-                collider->getCorners(p1, p2, p3, p4);
+                for (auto *body : _bodies) {
+                    auto *collider = body->getComponent<ColliderComponent>();
 
-                Render::drawCircle(renderer, {255, 0, 0, 255},
-                                   collider->getAnchorPoint(), 2);
+                    Math::Vector2f p1, p2, p3, p4;
+                    collider->getCorners(p1, p2, p3, p4);
 
-                Render::drawQuadrangle(renderer, {0, 255, 0, 255},
-                                       p1, p2, p3, p4);
-            }
-
-            for (auto&[key, manifold] : _manifolds)
-                for (std::size_t i = 0; i < manifold.contactsNum; ++i) {
-                    auto &contact = manifold.contacts[i];
                     Render::drawCircle(renderer, {255, 0, 0, 255},
-                                       contact.position, 2);
+                                       collider->getAnchorPoint(), 2);
+
+                    Render::drawQuadrangle(renderer, {0, 255, 0, 255},
+                                           p1, p2, p3, p4);
                 }
+
+                for (auto&[key, manifold] : _manifolds)
+                    for (std::size_t i = 0; i < manifold.contactsNum; ++i) {
+                        auto &contact = manifold.contacts[i];
+                        Render::drawCircle(renderer, {255, 0, 0, 255},
+                                           contact.position, 2);
+                    }
+            }
         }
 
     private:
         AABBTree _tree;
         std::size_t _tickCounter = 0;
         const std::size_t _treeRebuildTicks = 60;
-        std::vector<std::tuple<ColliderComponent *, bool>> _collidersToDraw;
         std::vector<ECS::Entity *> _bodies;
         std::map<ManifoldKey, Manifold> _manifolds;
 
@@ -113,18 +117,11 @@ namespace Engine::Physics {
         }
 
         void broadPhase(double dt) {
-            _collidersToDraw.clear();
-            _collidersToDraw.resize(_bodies.size());
-
-            for (size_t i = 0; i < _bodies.size(); ++i) {
-                ECS::Entity *bodyA = _bodies[i];
-
+            for (auto *bodyA : _bodies) {
                 auto *collider = bodyA->getComponent<ColliderComponent>();
 
                 Math::Rect_d boxA = collider->getPositionedBB();
                 auto targets = _tree.query(boxA);
-
-                int realTargets = 0;
 
                 for (auto *pnt : targets) {
                     auto bodyB = reinterpret_cast<ECS::Entity *>(pnt);
@@ -135,18 +132,14 @@ namespace Engine::Physics {
                     auto it = _manifolds.find(key);
                     Manifold manifold(bodyA, bodyB);
                     if (manifold.detectAndCalcCollision()) {
-                        ++realTargets;
-                        std::get<1>(_collidersToDraw[i]) = true;
-
                         if (it == _manifolds.end())
                             _manifolds[key] = manifold;
-                        else if (!it->second.detectAndCalcCollision())
-                            _manifolds.erase(it);
+                        else
+                            it->second.detectAndCalcCollision();
                     } else {
                         _manifolds.erase(key);
                     }
                 }
-                std::get<0>(_collidersToDraw[i]) = collider;
             }
         }
 
@@ -175,7 +168,6 @@ namespace Engine::Physics {
         void integrateForces(double dt) {
             for (auto &body : _bodies) {
                 auto *rigid = body->getComponent<RigidBodyComponent>();
-                rigid->applyAcceleration({0, 1});
                 rigid->integrateForces(dt);
             }
         }
