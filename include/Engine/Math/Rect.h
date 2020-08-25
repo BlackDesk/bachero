@@ -65,7 +65,7 @@ namespace Engine::Math {
 
     typedef Rect<double, double> Rect_d;
     typedef Rect<float, float> Rect_f;
-    typedef Rect<int, unsigned int> Rect_i;
+    typedef Rect<int, int> Rect_i;
     typedef Rect<unsigned int, unsigned int> Rect_ui;
 }
 

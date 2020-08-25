@@ -37,103 +37,51 @@ namespace Engine::Physics {
     public:
         void update() override {
 
-            _collidersToDraw.clear();
-
             auto dt = DeltaTime::get();
 
-            auto bodies = ECS::EntityManager::getInstance()->
-                    getEntitiesThatHaveComponent<RigidBodyComponent>();
+            getBodies();
 
-            if (_tickCounter++ % _treeRebuildTicks == 0)
-                rebuildTree(bodies);
-            else
-                updateTree(bodies);
-
-            for (auto &body : bodies) {
-                auto *rigid = body->getComponent<RigidBodyComponent>();
-                rigid->integrateAcceleration(dt);
+            if (_tickCounter++ % _treeRebuildTicks == 0) {
+                rebuildTree();
+            } else {
+                removeInvalidEntitiesFromTree();
+                updateTree();
             }
 
-            _collidersToDraw.resize(bodies.size());
-            for (size_t i = 0; i < bodies.size(); ++i) {
-                ECS::Entity *bodyA = bodies[i];
-                Math::Rect_d boxA = bodyA->getComponent<ColliderComponent>()->getPositionedBB();
-                auto targets = _tree.query(boxA);
-                int realTargets = 0;
-                for (auto it = targets.begin(); it != targets.end(); ++it) {
-                    auto *pnt = *it;
-//                for (auto *pnt : targets) {
-                    auto bodyB = reinterpret_cast<ECS::Entity *>(pnt);
-                    if (bodyA == bodyB)
-                        continue;
-                    Manifold manifold(bodyA, bodyB);
-                    if (manifold.detect()) {
-                        ++realTargets;
-                        std::get<1>(_collidersToDraw[i]) = true;
-//                        manifold.resolve();
-                    }
-                }
-//                std::cout << targets.size() << "\n";
-            }
+            broadPhase(dt);
+            removeInvalidManifolds();
+            integrateForces(dt);
+            calcPreStep(dt);
+            performIterativeCollisionResolution();
+            integrateVelocities(dt);
 
-            for (int iter = 0; iter < 5; ++iter) {
-                for (ECS::Entity *bodyA : bodies) {
-                    Math::Rect_d boxA = bodyA->getComponent<ColliderComponent>()->getPositionedBB();
-                    auto targets = _tree.query(boxA);
-                    for (auto *pnt : targets) {
-//                        auto *pnt = targets[i];
-                        auto bodyB = reinterpret_cast<ECS::Entity *>(pnt);
-                        if (bodyA >= bodyB)
-                            continue;
-                        Manifold manifold(bodyA, bodyB);
-                        if (manifold.detect()) {
-                            manifold.resolve();
-                            manifold.positionalCorrection();
-                        }
-                    }
-                }
-                updateTree(bodies);
-            }
-
-            for (auto &body : bodies) {
-                auto *rigid = body->getComponent<RigidBodyComponent>();
-                rigid->integrateVelocity(dt);
-            }
-
-            updateTree(bodies);
-
-            for (size_t i = 0; i < bodies.size(); ++i) {
-                auto &body = bodies[i];
-                auto *rigid = body->getComponent<RigidBodyComponent>();
-                auto *collider = body->getComponent<ColliderComponent>();
-
-                rigid->acceleration = {0, 0};
-                rigid->torque = 0;
-                std::get<0>(_collidersToDraw[i]) = collider;
-            }
+            updateTree();
         }
 
         void render() override {
             auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
             auto *sdlRenderer = renderer->get();
 
-            AABBTreeSDLVisualizer viz(sdlRenderer);
-            _tree.visualize(viz);
+//            AABBTreeSDLVisualizer viz(sdlRenderer);
+//            _tree.visualize(viz);
 
             for (auto[collider, color] : _collidersToDraw) {
                 Math::Vector2f p1, p2, p3, p4;
                 collider->getCorners(p1, p2, p3, p4);
 
                 Render::drawCircle(renderer, {255, 0, 0, 255},
-                                   collider->getOrigin(), 2);
+                                   collider->getAnchorPoint(), 2);
 
-                if (color)
-                    Render::drawQuadrangle(renderer, {255, 0, 0, 255},
-                                           p1, p2, p3, p4);
-                else
-                    Render::drawQuadrangle(renderer, {0, 255, 0, 255},
-                                           p1, p2, p3, p4);
+                Render::drawQuadrangle(renderer, {0, 255, 0, 255},
+                                       p1, p2, p3, p4);
             }
+
+            for (auto&[key, manifold] : _manifolds)
+                for (std::size_t i = 0; i < manifold.contactsNum; ++i) {
+                    auto &contact = manifold.contacts[i];
+                    Render::drawCircle(renderer, {255, 0, 0, 255},
+                                       contact.position, 2);
+                }
         }
 
     private:
@@ -141,59 +89,111 @@ namespace Engine::Physics {
         std::size_t _tickCounter = 0;
         const std::size_t _treeRebuildTicks = 60;
         std::vector<std::tuple<ColliderComponent *, bool>> _collidersToDraw;
+        std::vector<ECS::Entity *> _bodies;
+        std::map<ManifoldKey, Manifold> _manifolds;
 
-        void rebuildTree(const std::vector<ECS::Entity *> &bodies) {
+        void getBodies() {
+            ECS::EntityManager::getInstance()->
+                    getEntitiesThatHaveComponent<RigidBodyComponent>(_bodies);
+        }
+
+        void rebuildTree() {
             _tree.clear();
-            for (auto *body : bodies)
+            for (auto *body : _bodies)
                 _tree.insert(body, body->getComponent<ColliderComponent>()->getPositionedBB());
         }
 
-        void updateTree(const std::vector<ECS::Entity *> &bodies) {
-            for (auto *body : bodies)
+        void updateTree() {
+            for (auto *body : _bodies)
                 _tree.update(body, body->getComponent<ColliderComponent>()->getPositionedBB());
         }
 
-        //Thanks to OLC: https://www.youtube.com/watch?v=8JJ-4JgR7Dg
-        static bool rayVsBoxCollisionDetection(Math::Vector2d rayOrigin,
-                                               Math::Vector2d rayDirection,
-                                               Math::Rect_d target,
-                                               Math::Vector2d &contactPoint,
-                                               Math::Vector2d &contactNormal,
-                                               double &t_hitNear) {
-            Math::Vector2d t_near = (target.position - rayOrigin)
-                    .elementWiseDivision(rayDirection);
-            Math::Vector2d t_far = (target.position + target.size - rayOrigin)
-                    .elementWiseDivision(rayDirection);
+        void removeInvalidEntitiesFromTree() {
 
-            if (t_near.x > t_far.x)
-                std::swap(t_near.x, t_far.x);
-            if (t_near.y > t_far.y)
-                std::swap(t_near.y, t_far.y);
+        }
 
-            if (t_near.x > t_far.y || t_near.y > t_far.x)
-                return false;
+        void broadPhase(double dt) {
+            _collidersToDraw.clear();
+            _collidersToDraw.resize(_bodies.size());
 
-            t_hitNear = std::max(t_near.x, t_near.y);
-            double t_hitFar = std::max(t_far.x, t_far.y);
+            for (size_t i = 0; i < _bodies.size(); ++i) {
+                ECS::Entity *bodyA = _bodies[i];
 
-            if (t_hitFar < 0 || t_hitNear > 1)
-                return false;
+                auto *collider = bodyA->getComponent<ColliderComponent>();
 
-            contactPoint = rayOrigin + t_hitNear * rayDirection;
+                Math::Rect_d boxA = collider->getPositionedBB();
+                auto targets = _tree.query(boxA);
 
-            if (t_near.x > t_near.y) {
-                if (rayDirection.x < 0)
-                    contactNormal = {1, 0};
-                else
-                    contactNormal = {-1, 0};
-            } else {
-                if (rayDirection.x < 0)
-                    contactNormal = {0, 1};
-                else
-                    contactNormal = {0, -1};
+                int realTargets = 0;
+
+                for (auto *pnt : targets) {
+                    auto bodyB = reinterpret_cast<ECS::Entity *>(pnt);
+                    if (bodyA == bodyB)
+                        continue;
+
+                    ManifoldKey key(bodyA, bodyB);
+                    auto it = _manifolds.find(key);
+                    Manifold manifold(bodyA, bodyB);
+                    if (manifold.detectAndCalcCollision()) {
+                        ++realTargets;
+                        std::get<1>(_collidersToDraw[i]) = true;
+
+                        if (it == _manifolds.end())
+                            _manifolds[key] = manifold;
+                        else if (!it->second.detectAndCalcCollision())
+                            _manifolds.erase(it);
+                    } else {
+                        _manifolds.erase(key);
+                    }
+                }
+                std::get<0>(_collidersToDraw[i]) = collider;
             }
+        }
 
-            return true;
+        void removeInvalidManifolds() {
+            std::vector<ManifoldKey> manifoldsToRemove;
+            for (auto&[key, manifold] : _manifolds)
+                if (!manifold.bodyA->isActive() ||
+                    !manifold.bodyB->isActive() ||
+                    !manifold.detectAndCalcCollision())
+                    manifoldsToRemove.push_back(key);
+            for (auto &key : manifoldsToRemove)
+                _manifolds.erase(key);
+        }
+
+        void calcPreStep(double dt) {
+            for (auto&[key, manifold] : _manifolds)
+                manifold.preStep(dt);
+        }
+
+        void performIterativeCollisionResolution() {
+            for (int iter = 0; iter < 15; ++iter)
+                for (auto&[key, manifold] : _manifolds)
+                    manifold.resolve();
+        }
+
+        void integrateForces(double dt) {
+            for (auto &body : _bodies) {
+                auto *rigid = body->getComponent<RigidBodyComponent>();
+                rigid->applyAcceleration({0, 1});
+                rigid->integrateForces(dt);
+            }
+        }
+
+        void integrateVelocities(double dt) {
+            for (auto &body : _bodies) {
+                auto *rigid = body->getComponent<RigidBodyComponent>();
+                rigid->integrateVelocity(dt);
+            }
+        }
+
+        void clearForces() {
+            for (auto *body : _bodies) {
+                auto *rigid = body->getComponent<RigidBodyComponent>();
+
+                rigid->acceleration = {0, 0};
+                rigid->torque = 0;
+            }
         }
     };
 }

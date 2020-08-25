@@ -24,7 +24,7 @@ public:
         _rigidBody->velocity = Engine::Input::InputMapper::getInstance()->getMovementDir() * 200;
         int lArr = Engine::Input::InputManager::getInstance()->isKeyDown(SDL_SCANCODE_K);
         int rArr = Engine::Input::InputManager::getInstance()->isKeyDown(SDL_SCANCODE_L);
-        _rigidBody->angularVelocity = (rArr - lArr) * 1.0f;
+        _rigidBody->angularVelocity += (rArr - lArr) * 5.0f * Engine::DeltaTime::get();
     }
 
     void update() override {

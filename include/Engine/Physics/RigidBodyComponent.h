@@ -10,23 +10,35 @@ namespace Engine::Physics {
                                     float _restitution = 0,
                                     float _friction = 0)
                 : mass(_mass), invMass(_mass > 0.0f ? 1.0f / _mass : 0.0f),
-                  restitution(_restitution), friction(_friction) {}
+                  restitution(_restitution), friction(_friction) {
+        }
 
         void init() override {
             if (!owner->hasComponent<TransformComponent>())
                 owner->addComponent<TransformComponent>();
             if (!owner->hasComponent<ColliderComponent>())
                 throw std::runtime_error("RigidBody requires Collider.");
+
             _transform = owner->getComponent<TransformComponent>();
             _collider = owner->getComponent<ColliderComponent>();
+            Math::Rect_f bb = _collider->getBoundingBox();
+
+            const_cast<float &>(I) = mass * (
+                    bb.size.lengthSqr() / 12.0f +
+                    _collider->getCenterOfMass().lengthSqr()
+            );
+
+            const_cast<float &>(invI) = (I > 0.0f ? 1.0f / I : 0.0f);
         }
 
         void applyVelocity(Math::Vector2d vel) {
             velocity += vel;
         }
 
-        void applyImpulse(Math::Vector2d impulse) {
+        //radius is a vector from anchor point to point of where impulse applied
+        void applyImpulse(Math::Vector2f impulse, Math::Vector2f radius) {
             velocity += invMass * impulse;
+            angularVelocity += invI * radius.pseudoDotProduct(impulse);
         }
 
         void applyForce(Math::Vector2d force) {
@@ -35,6 +47,10 @@ namespace Engine::Physics {
 
         void applyAcceleration(Math::Vector2d accel) {
             acceleration += accel;
+        }
+
+        void applyTorque(float M) {
+            torque += M;
         }
 
         void integrateVelocity(double dt) {
@@ -47,11 +63,12 @@ namespace Engine::Physics {
                 _transform->rotation += angularVelocity * dt;
         }
 
-        void integrateAcceleration(double dt) {
+        void integrateForces(double dt) {
             if (invMass == 0.0)
                 return;
 
             velocity += acceleration * dt;
+            angularVelocity += torque * dt;
         }
 
         bool isStatic() const {
@@ -63,6 +80,7 @@ namespace Engine::Physics {
 
         const float mass;
         const float invMass;
+        const float I = 0.0f, invI = 0.0f;
         const float restitution;
         const float friction;
 

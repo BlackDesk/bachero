@@ -8,10 +8,12 @@
 class Box : public Engine::ECS::Entity {
 public:
     explicit Box(Engine::Math::Vector2d position = {0, 0}) {
-        addComponent<Engine::TransformComponent>(position);
+        Engine::Math::Vector2i size(30, 30);
+
+        addComponent<Engine::TransformComponent>(position + size / 2);
         addComponent<Engine::Physics::ColliderComponent>(Engine::Math::Rect_i{
-                Engine::Math::Vector2i(0, 0),
-                Engine::Math::Vector2ui(10, 10),
+                -size / 2,
+                size,
         });
         addComponent<Engine::Physics::RigidBodyComponent>(20, 0.5, 0.5);
     }

@@ -56,8 +56,11 @@ namespace Engine {
         }
 
         void handleEvents() {
+            //Retrieving events
             Input::InputManager::getInstance()->handleEvents();
             Input::InputMapper::getInstance()->handleEvents();
+
+            //updating systems
             ECS::SystemManager::getInstance()->handleEvents();
             ECS::EntityManager::getInstance()->handleEvents();
 
@@ -67,8 +70,14 @@ namespace Engine {
 
         void update() {
             _debugWidget->update();
-            ECS::SystemManager::getInstance()->update();
             ECS::EntityManager::getInstance()->update();
+
+            ECS::SystemManager::getInstance()->update();
+
+            //refresh should happen only after all entities and systems were updated
+            // otherwise this can lead to dangling pointers of removed objects without
+            // any opportunity for systems to check for it beforehand
+            ECS::EntityManager::getInstance()->refresh();
         }
 
         void render() {

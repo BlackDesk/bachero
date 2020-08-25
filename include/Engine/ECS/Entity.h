@@ -86,14 +86,16 @@ namespace Engine::ECS {
             _isActive = false;
         }
 
-        virtual bool isActive() final {
+        virtual bool isActive() const final {
             return _isActive;
         }
 
     private:
         template<int I>
         struct Int2Type {
-            enum { value = I };
+            enum {
+                value = I
+            };
         };
 
         template<class T>
@@ -138,7 +140,7 @@ namespace Engine::ECS {
             _dataOnlyComponents[id] = std::unique_ptr<T>();
         }
 
-        static const size_t _maxComponents = 32 ;
+        static const size_t _maxComponents = 32;
         typedef std::array<std::unique_ptr<Component>, _maxComponents> ComponentsArray;
         typedef std::array<std::unique_ptr<DataOnlyComponent>, _maxComponents> DataOnlyComponentsArray;
         typedef std::bitset<_maxComponents> ComponentsBitset;
@@ -173,21 +175,33 @@ namespace Engine::ECS {
         }
 
         template<typename ...Ts>
-        std::vector<Entity *> getEntitiesThatHaveComponents() {
-            std::vector<Entity *> result;
+        void getEntitiesThatHaveComponents(std::vector<Entity *> &result) const {
+            result.clear();
             for (auto &entity : _entities)
                 if (entity->isActive() && entity->hasComponents<Ts...>())
                     result.emplace_back(entity.get());
+        }
+
+        template<typename T>
+        void getEntitiesThatHaveComponent(std::vector<Entity *> &result) const {
+            result.clear();
+            for (auto &entity : _entities)
+                if (entity->isActive() && entity->hasComponent<T>())
+                    result.emplace_back(entity.get());
+        }
+
+        template<typename ...Ts>
+        [[nodiscard]] std::vector<Entity *> getEntitiesThatHaveComponents() const {
+            std::vector<Entity *> result;
+            getEntitiesThatHaveComponents<Ts...>(result);
             return result;
         }
 
         //more optimized way to retrieve one component
         template<typename T>
-        std::vector<Entity *> getEntitiesThatHaveComponent() {
+        [[nodiscard]] std::vector<Entity *> getEntitiesThatHaveComponent() const {
             std::vector<Entity *> result;
-            for (auto &entity : _entities)
-                if (entity->isActive() && entity->hasComponent<T>())
-                    result.emplace_back(entity.get());
+            getEntitiesThatHaveComponent<T>(result);
             return result;
         }
 

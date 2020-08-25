@@ -23,8 +23,8 @@ namespace Engine::Math {
 
     inline Mat2x2 getRotationalMat(float rotation) {
         float cos = std::cos(rotation), sin = std::sin(rotation);
-        return Mat2x2{cos, sin,
-                      -sin, cos};
+        return Mat2x2{cos, -sin,
+                      sin, cos};
     }
 }
 

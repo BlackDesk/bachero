@@ -82,6 +82,12 @@ namespace Engine::Math {
             return sqrt(lengthSqr());
         }
 
+        void normalize() {
+            double len = length();
+            if (len > 0.0)
+                *this /= len;
+        }
+
         T x = 0;
         T y = 0;
 
