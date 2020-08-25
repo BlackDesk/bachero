@@ -17,6 +17,17 @@ namespace Engine::Input {
         memset(_onMouseDown, 0, sizeof(_onMouseDown));
         memset(_onMouseUp, 0, sizeof(_onMouseUp));
 
+        auto *sdlKeyState = SDL_GetKeyboardState(&_numKeys);
+        if (!_keyState)
+            _keyState = new uint8_t[_numKeys];
+        memcpy(_keyState, sdlKeyState, _numKeys);
+        if (!_onKeyUpState)
+            _onKeyUpState = new uint8_t[_numKeys];
+        if (!_onKeyDownState)
+            _onKeyDownState = new uint8_t[_numKeys];
+        memset(_onKeyUpState, 0, _numKeys);
+        memset(_onKeyDownState, 0, _numKeys);
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -51,26 +62,20 @@ namespace Engine::Input {
                     _mousePos.x = event.motion.x;
                     _mousePos.y = event.motion.y;
                     break;
+                case SDL_KEYUP:
+                    _onKeyUpState[event.key.keysym.scancode] = true;
+                    break;
+                case SDL_KEYDOWN:
+                    _onKeyDownState[event.key.keysym.scancode] = true;
+                    break;
                 default:
                     break;
-            }
-        }
-
-        _prevState = _curState;
-        _curState = (uint8_t *) SDL_GetKeyboardState(&_numKeys);
-        if (_prevState && _curState) {
-            _onKeyUpState = new uint8_t[_numKeys];
-            _onKeyDownState = new uint8_t[_numKeys];
-
-            for (int i = 0; i < _numKeys; ++i) {
-                _onKeyDownState[i] = (!_prevState[i] && _curState[i]);
-                _onKeyUpState[i] = (_prevState[i] && !_curState[i]);
             }
         }
     }
 
     bool InputManager::isKeyDown(int keyCode) {
-        return _curState && _curState[keyCode];
+        return _keyState && _keyState[keyCode];
     }
 
     bool InputManager::onKeyDown(int keyCode) {
@@ -99,5 +104,11 @@ namespace Engine::Input {
 
     Math::Vector2i InputManager::getMousePos() {
         return _mousePos;
+    }
+
+    InputManager::~InputManager() {
+        delete _onKeyDownState;
+        delete _onKeyUpState;
+        delete _keyState;
     }
 }

@@ -36,11 +36,12 @@ namespace Engine::Input {
 
         bool onQuit();
 
+        ~InputManager();
+
     private:
         bool _quit = false;
         int _numKeys = 0;
-        uint8_t *_prevState = nullptr;
-        uint8_t *_curState = nullptr;
+        uint8_t *_keyState = nullptr;
         uint8_t *_onKeyUpState = nullptr;
         uint8_t *_onKeyDownState = nullptr;
         bool _mouseState[3];
