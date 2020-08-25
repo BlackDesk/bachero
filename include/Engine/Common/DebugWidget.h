@@ -9,37 +9,42 @@ namespace Engine {
     class DebugWidget {
     public:
         DebugWidget() {
-            _text1 = std::make_unique<Render::Text>("assets/Open_Sans/OpenSans-regular.ttf",
+            _text = std::make_unique<Render::Text>("assets/Open_Sans/OpenSans-regular.ttf",
                                                     30,
                                                     Render::Color{0, 0, 0, 255},
                                                     Render::TextureManager::getInstance()->getDefaultRenderer());
-            _text2 = std::make_unique<Render::Text>("assets/Open_Sans/OpenSans-regular.ttf",
-                                                    30,
-                                                    Render::Color{0, 0, 0, 255},
-                                                    Render::TextureManager::getInstance()->getDefaultRenderer());
-            _text2->position.y = 35;
+            memset(_freqQueue, 0, sizeof(_freqQueue));
         }
 
         void update() {
-            double dt = DeltaTime::get();
-            pdt1 = pdt1 * (1 - k1) + dt * k1;
-            if (pdt1 > 0)
-                _text1->setText(std::to_string((int) (1.0 / pdt1)));
-            pdt2 = pdt2 * (1 - k2) + dt * k2;
-            if (pdt1 > 0)
-                _text2->setText(std::to_string((int) (1.0 / pdt2)));
+            float dt = DeltaTime::get();
+            float freq = (dt > 0.0f ? 1.0f / dt : 0.0f);
+
+            _freqSum += freq;
+            _freqSum -= _freqQueue[_freqQueuePnt];
+            _freqQueue[_freqQueuePnt] = freq;
+            _freqQueuePnt = (_freqQueuePnt + 1) % _freqQueueSize;
+
+            int fps = (int)std::round(_freqSum / _freqQueueSize);
+
+            if (fps != _pFPS) {
+                _text->setText(std::to_string(fps));
+                _pFPS = fps;
+            }
         }
 
         void render() {
-            _text1->render();
-            _text2->render();
+            _text->render();
         }
 
     private:
-        const double k1 = 0.6, k2 = 0.01;
-        double pdt1 = 0, pdt2 = 0;
-        std::unique_ptr<Render::Text> _text1;
-        std::unique_ptr<Render::Text> _text2;
+        static const std::size_t _freqQueueSize = 200;
+        float _freqQueue[_freqQueueSize];
+        std::size_t _freqQueuePnt = 0;
+        float _freqSum = 0.0f;
+
+        int _pFPS = -1;
+        std::unique_ptr<Render::Text> _text;
     };
 }
 
