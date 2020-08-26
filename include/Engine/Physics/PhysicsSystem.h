@@ -43,6 +43,7 @@ namespace Engine::Physics {
             auto dt = DeltaTime::get();
 
             getBodies();
+            applyLocks();
 
             if (_tickCounter++ % _treeRebuildTicks == 0)
                 rebuildTree();
@@ -116,6 +117,15 @@ namespace Engine::Physics {
                     _tree.update(body, body->getComponent<ColliderComponent>()->getPositionedBB());
                 else
                     _tree.erase(body, body->getComponent<ColliderComponent>()->getPositionedBB());
+        }
+
+        void applyLocks() {
+            for (auto &body : _bodies)
+                if (body->isActive()) {
+                    auto *rigid = body->getComponent<RigidBodyComponent>();
+                    if (rigid->lockedRotation())
+                        rigid->angularVelocity = 0.0f;
+                }
         }
 
         void broadPhase(double dt) {

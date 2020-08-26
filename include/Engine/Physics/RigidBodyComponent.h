@@ -21,14 +21,12 @@ namespace Engine::Physics {
 
             _transform = owner->getComponent<TransformComponent>();
             _collider = owner->getComponent<ColliderComponent>();
-            Math::Rect_f bb = _collider->getBoundingBox();
 
-            const_cast<float &>(I) = mass * (
-                    bb.size.lengthSqr() / 12.0f +
-                    _collider->getCenterOfMass().lengthSqr()
-            );
-
-            const_cast<float &>(invI) = (I > 0.0f ? 1.0f / I : 0.0f);
+            //to recalc
+            if (lockedRotation())
+                lockRotation();
+            else
+                unlockRotation();
         }
 
         void applyVelocity(Math::Vector2d vel) {
@@ -38,7 +36,8 @@ namespace Engine::Physics {
         //radius is a vector from anchor point to point of where impulse applied
         void applyImpulse(Math::Vector2f impulse, Math::Vector2f radius) {
             velocity += invMass * impulse;
-            angularVelocity += invI * radius.pseudoDotProduct(impulse);
+            if (!lockedRotation())
+                angularVelocity += invI * radius.pseudoDotProduct(impulse);
         }
 
         void applyForce(Math::Vector2d force) {
@@ -58,8 +57,7 @@ namespace Engine::Physics {
                 return;
 
             _transform->position += velocity * dt;
-
-            if (!lockedRotation)
+            if (!lockedRotation())
                 _transform->rotation += angularVelocity * dt;
         }
 
@@ -68,7 +66,8 @@ namespace Engine::Physics {
                 return;
 
             velocity += acceleration * dt;
-            angularVelocity += torque * dt;
+            if (!lockedRotation())
+                angularVelocity += torque * dt;
         }
 
         bool isStatic() const {
@@ -87,9 +86,33 @@ namespace Engine::Physics {
         float torque = 0;
         float angularVelocity = 0;
 
-        bool lockedRotation = false;
+        bool lockedRotation() {
+            return _lockedRotation;
+        }
+
+        void lockRotation() {
+            _lockedRotation = true;
+
+            const_cast<float &>(I) = 0.0f;
+            const_cast<float &>(invI) = 0.0f;
+        }
+
+        void unlockRotation() {
+            _lockedRotation = false;
+
+            if (_collider) {
+                Math::Rect_f bb = _collider->getBoundingBox();
+                const_cast<float &>(I) = mass * (
+                        bb.size.lengthSqr() / 12.0f +
+                        _collider->getCenterOfMass().lengthSqr()
+                );
+
+                const_cast<float &>(invI) = (I > 0.0f ? 1.0f / I : 0.0f);
+            }
+        }
 
     private:
+        bool _lockedRotation = false;
         TransformComponent *_transform = nullptr;
         ColliderComponent *_collider = nullptr;
     };

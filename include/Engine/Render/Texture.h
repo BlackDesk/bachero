@@ -13,9 +13,22 @@
 namespace Engine::Render {
     class Texture {
     public:
+        enum Flip {
+            none = SDL_FLIP_NONE,
+            vertical = SDL_FLIP_VERTICAL,
+            horizontal = SDL_FLIP_HORIZONTAL
+        };
+
         static Texture *load(const std::filesystem::path &path, Renderer *renderer);
 
         void draw(Math::Rect_ui src, Math::Rect_i dst);
+
+        void draw(Math::Rect_ui src, Math::Rect_i dst,
+                    Math::Vector2f rotPnt, double angle,
+                    Flip flip = Flip::none);
+
+        void draw(Math::Rect_ui src, Math::Rect_i dst,
+                  Flip flip);
 
         Math::Vector2ui size();
 

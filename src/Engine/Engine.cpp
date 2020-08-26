@@ -7,6 +7,7 @@
 #include "Engine/Input/InputManager.h"
 #include "Engine/Input/InputMapper.h"
 #include "Engine/Physics/PhysicsSystem.h"
+#include "Engine/Render/RenderSystem.h"
 #include "Engine/Common/DebugWidget.h"
 #include "Engine/Common/DebugMode.h"
 
@@ -19,7 +20,7 @@ namespace Engine {
                   Math::Vector2d winDimensions,
                   bool fullscreen) {
             _environment = new Render::Environment();
-            _window = new Render::Window(title, winDimensions, false);
+            _window = new Render::Window(title, winDimensions, fullscreen);
 
             Render::TextureManager::getInstance()->setDefaultRenderer(_window->getRenderer());
             Input::InputManager::getInstance()->init();
@@ -27,6 +28,7 @@ namespace Engine {
 
             _debugWidget = new DebugWidget();
 
+            ECS::SystemManager::getInstance()->createSystem<Render::RenderSystem>();
             ECS::SystemManager::getInstance()->createSystem<Physics::PhysicsSystem>();
 
             std::cout << "Engine init success." << std::endl;

@@ -22,7 +22,7 @@ namespace Engine::Render {
         if (_window == nullptr)
             throwRenderRuntimeExceptionSDL("could not create window: %s\n");
 
-        auto *SDL_renderer = SDL_CreateRenderer(_window, -1, 0);
+        auto *SDL_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
 
         if (SDL_renderer == nullptr)
             throwRenderRuntimeExceptionSDL("could not create renderer: %s\n");

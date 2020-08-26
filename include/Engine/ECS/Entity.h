@@ -36,14 +36,14 @@ namespace Engine::ECS {
         }
 
         template<class T, typename ...Args>
-        void addComponent(Args &&...args) {
+        T *addComponent(Args &&...args) {
             static auto id = getComponentTypeID<T>();
 
             if (_presence[id])
                 throw std::runtime_error("Entity already has that component.");
             _presence.set(id);
 
-            _addComponent<T>(Int2Type<getComponentEnumType<T>()>(), std::forward<Args>(args)...);
+            return _addComponent<T>(Int2Type<getComponentEnumType<T>()>(), std::forward<Args>(args)...);
         }
 
         template<class T>
@@ -111,19 +111,29 @@ namespace Engine::ECS {
         }
 
         template<class T, typename ...Args>
-        void _addComponent(Int2Type<ComponentEnumType::Behavioral>, Args &&...args) {
+        T *_addComponent(Int2Type<ComponentEnumType::Behavioral>, Args &&...args) {
             static auto id = getComponentTypeID<T>();
 
-            _components[id] = std::make_unique<T>(std::forward<Args>(args)...);
+            auto component = std::make_unique<T>(std::forward<Args>(args)...);
+            T *compPtr = component.get();
+
+            _components[id] = std::move(component);
             _components[id]->owner = this;
+
+            return compPtr;
         }
 
         template<class T, typename ...Args>
-        void _addComponent(Int2Type<ComponentEnumType::DataOnly>, Args &&...args) {
+        T *_addComponent(Int2Type<ComponentEnumType::DataOnly>, Args &&...args) {
             static auto id = getComponentTypeID<T>();
 
-            _dataOnlyComponents[id] = std::make_unique<T>(std::forward<Args>(args)...);
+            auto component = std::make_unique<T>(std::forward<Args>(args)...);
+            T *compPtr = component.get();
+
+            _dataOnlyComponents[id] = std::move(component);
             _dataOnlyComponents[id]->owner = this;
+
+            return compPtr;
         }
 
         template<class T>

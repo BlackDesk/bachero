@@ -25,11 +25,14 @@ namespace Engine::Render {
                               _frameSize);
             Math::Rect_ui dst(position,
                               _frameSize);
-            _texture->draw(src, dst);
+            _texture->draw(src, dst, anchorPointLocal, rotation, flip);
         }
 
         Math::Vector2i position;
+        Math::Vector2i anchorPointLocal;
         Math::Vector2ui frame;
+        Texture::Flip flip = Texture::Flip::none;
+        float rotation = 0.0f;
 
     private:
         Texture *_texture;

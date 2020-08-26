@@ -24,7 +24,7 @@ public:
 #endif
         engine->init("Bachero!",
                      {640, 480},
-                     true);
+                     false);
         initEntities();
 
         while (engine->isRunning()) {
@@ -51,9 +51,9 @@ public:
     void initEntities() {
         auto *entityManager = Engine::ECS::EntityManager::getInstance();
         entityManager->createEntity<Player>()->init();
-        for (int i = 0; i < 30; ++i)
-            for (int j = 0; j < 30; ++j)
-                entityManager->createEntity<Box>(Engine::Math::Vector2d{300 + i * 10, 10 + j * 10})->init();
+        for (int i = 0; i < 5; ++i)
+            for (int j = 0; j < 5; ++j)
+                entityManager->createEntity<Box>(Engine::Math::Vector2d{300 + i * 30, 10 + j * 30})->init();
         entityManager->createEntity<Wall>(Engine::Math::Rect_d{{0, 0}, {640, 10}})->init();
         entityManager->createEntity<Wall>(Engine::Math::Rect_d{{0, 470}, {640, 10}})->init();
         entityManager->createEntity<Wall>(Engine::Math::Rect_d{{0, 10}, {10, 460}})->init();

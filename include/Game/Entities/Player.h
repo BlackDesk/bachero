@@ -15,15 +15,23 @@ public:
         auto *texture = Engine::Render::TextureManager::getInstance()->
                 loadTexture("assets/sprite.png",
                             "player");
-        addComponent<Engine::TransformComponent>(Engine::Math::Vector2f(100, 100));
-//        addComponent<Engine::Render::SpriteComponent>(texture, Engine::Math::Vector2ui(144, 192));
-//        getComponent<Engine::Render::SpriteComponent>()->frame = {1, 0};
+        auto *transform = addComponent<Engine::TransformComponent>(
+                Engine::Math::Vector2f(100, 100));
+        auto *sprite = addComponent<Engine::Render::SpriteComponent>(
+                texture,
+                Engine::Math::Vector2ui(144, 192));
+        sprite->position = {-50, 0};
+        sprite->frame = {1, 0};
+
         addComponent<PlayerMovementComponent>();
         addComponent<Engine::Physics::ColliderComponent>(Engine::Math::Rect_i{
-            Engine::Math::Vector2i(-20, -10),
-            Engine::Math::Vector2ui(104, 30),
+                Engine::Math::Vector2i(-20, -10),
+                Engine::Math::Vector2ui(104, 30),
         });
-        addComponent<Engine::Physics::RigidBodyComponent>(500, 0, 0.5);
+        auto *rigid = addComponent<Engine::Physics::RigidBodyComponent>(
+                500, 0, 0.5);
+        rigid->lockRotation();
+        const_cast<float &>(rigid->invI) = 0.0f;
     }
 
 private:

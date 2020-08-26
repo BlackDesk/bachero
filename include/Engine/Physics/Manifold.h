@@ -161,7 +161,7 @@ namespace Engine::Physics {
                 }
             }
 
-            mergeContacts(oldContacts, oldContactsNum);
+//            mergeContacts(oldContacts, oldContactsNum);
 
             return contactsNum > 0;
         }
@@ -225,7 +225,7 @@ namespace Engine::Physics {
         }
 
         void preCalcBias(Contact &c) {
-            const float k_allowedPenetration = 0.01f;
+            const float k_allowedPenetration = 0.00f;
             const float k_biasFactor = 0.2f;
             c.bias = -k_biasFactor * invDt * std::min(0.0f, -abs(c.separation) + k_allowedPenetration);
         }

@@ -17,6 +17,7 @@ namespace Engine::Render {
         }
 
         Math::Vector2ui frame;
+        Math::Vector2f position; //local space
 
         void init() override {
             if (!owner->hasComponent<TransformComponent>())
@@ -24,10 +25,13 @@ namespace Engine::Render {
             _transform = owner->getComponent<TransformComponent>();
         }
 
+        //called internally by the render system
         void render() {
             if (_transform)
-                _sprite->position = _transform->position;
+                _sprite->position = _transform->position + position;
             _sprite->frame = frame;
+            _sprite->rotation = _transform->rotation;
+            _sprite->anchorPointLocal = -position;
 
             _sprite->render();
         }
