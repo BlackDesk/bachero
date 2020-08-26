@@ -214,6 +214,7 @@ namespace Engine::Physics {
                 insert(data, rect);
             } else {
                 node.aabb = newAABB;
+                _fixUpwards(node.parent);
             }
         }
 
