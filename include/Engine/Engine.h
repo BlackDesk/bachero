@@ -19,6 +19,9 @@ namespace Engine {
         void handleEvents();
         void update();
         void render();
+        void refresh();
+
+        void loop();
 
         void clean();
 

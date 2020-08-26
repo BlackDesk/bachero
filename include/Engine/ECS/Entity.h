@@ -175,42 +175,58 @@ namespace Engine::ECS {
         }
 
         template<typename ...Ts>
-        void getEntitiesThatHaveComponents(std::vector<Entity *> &result) const {
+        void getEntitiesThatHaveComponents(std::vector<Entity *> &result, bool includeNonActive = false) const {
             result.clear();
             for (auto &entity : _entities)
-                if (entity->isActive() && entity->hasComponents<Ts...>())
+                if ((includeNonActive || entity->isActive()) && entity->hasComponents<Ts...>())
                     result.emplace_back(entity.get());
+            if (includeNonActive)
+                for (auto &entity : _entitiesToBeRemoved)
+                    if (entity->hasComponents<Ts...>())
+                        result.emplace_back(entity.get());
         }
 
         template<typename T>
-        void getEntitiesThatHaveComponent(std::vector<Entity *> &result) const {
+        void getEntitiesThatHaveComponent(std::vector<Entity *> &result, bool includeNonActive = false) const {
             result.clear();
             for (auto &entity : _entities)
-                if (entity->isActive() && entity->hasComponent<T>())
+                if ((includeNonActive || entity->isActive()) && entity->hasComponent<T>())
                     result.emplace_back(entity.get());
+            if (includeNonActive)
+                for (auto &entity : _entitiesToBeRemoved)
+                    if (entity->hasComponent<T>())
+                        result.emplace_back(entity.get());
         }
 
         template<typename ...Ts>
-        [[nodiscard]] std::vector<Entity *> getEntitiesThatHaveComponents() const {
+        [[nodiscard]] std::vector<Entity *> getEntitiesThatHaveComponents(bool includeNonActive = false) const {
             std::vector<Entity *> result;
-            getEntitiesThatHaveComponents<Ts...>(result);
+            getEntitiesThatHaveComponents<Ts...>(result, includeNonActive);
             return result;
         }
 
         //more optimized way to retrieve one component
         template<typename T>
-        [[nodiscard]] std::vector<Entity *> getEntitiesThatHaveComponent() const {
+        [[nodiscard]] std::vector<Entity *> getEntitiesThatHaveComponent(bool includeNonActive = false) const {
             std::vector<Entity *> result;
-            getEntitiesThatHaveComponent<T>(result);
+            getEntitiesThatHaveComponent<T>(result, includeNonActive);
             return result;
         }
 
-        //O(n) at max and on average, sadly
+        //O(n)
         void refresh() {
-            _entities.erase(std::remove_if(_entities.begin(), _entities.end(),
-                                           [](auto &ptr) {
-                                               return !ptr->isActive();
-                                           }), _entities.end());
+            //two step removal system
+            // to ensure that all the systems updated their structures regardless the moment of destroy
+            _entitiesToBeRemoved.clear();
+            std::vector<std::unique_ptr<Entity>> _entitiesBuf;
+            std::partition_copy(std::make_move_iterator(_entities.begin()),
+                                std::make_move_iterator(_entities.end()),
+                                std::back_inserter(_entitiesToBeRemoved), std::back_inserter(_entitiesBuf),
+                                [](const auto &entity) -> bool {
+                                    return !entity->isActive();
+                                }
+            );
+            _entities = std::move(_entitiesBuf);
         }
 
         void handleEvents() {
@@ -234,6 +250,7 @@ namespace Engine::ECS {
 
     private:
         std::vector<std::unique_ptr<Entity>> _entities;
+        std::vector<std::unique_ptr<Entity>> _entitiesToBeRemoved;
     };
 }
 

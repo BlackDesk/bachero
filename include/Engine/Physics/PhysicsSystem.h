@@ -44,12 +44,10 @@ namespace Engine::Physics {
 
             getBodies();
 
-            if (_tickCounter++ % _treeRebuildTicks == 0) {
+            if (_tickCounter++ % _treeRebuildTicks == 0)
                 rebuildTree();
-            } else {
-                removeInvalidEntitiesFromTree();
+            else
                 updateTree();
-            }
 
             broadPhase(dt);
             removeInvalidManifolds();
@@ -66,10 +64,12 @@ namespace Engine::Physics {
                 auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
                 auto *sdlRenderer = renderer->get();
 
-//            AABBTreeSDLVisualizer viz(sdlRenderer);
-//            _tree.visualize(viz);
+//                AABBTreeSDLVisualizer viz(sdlRenderer);
+//                _tree.visualize(viz);
 
                 for (auto *body : _bodies) {
+                    if (!body->isActive())
+                        continue;
                     auto *collider = body->getComponent<ColliderComponent>();
 
                     Math::Vector2f p1, p2, p3, p4;
@@ -100,26 +100,28 @@ namespace Engine::Physics {
 
         void getBodies() {
             ECS::EntityManager::getInstance()->
-                    getEntitiesThatHaveComponent<RigidBodyComponent>(_bodies);
+                    getEntitiesThatHaveComponent<RigidBodyComponent>(_bodies, true);
         }
 
         void rebuildTree() {
             _tree.clear();
             for (auto *body : _bodies)
-                _tree.insert(body, body->getComponent<ColliderComponent>()->getPositionedBB());
+                if (body->isActive())
+                    _tree.insert(body, body->getComponent<ColliderComponent>()->getPositionedBB());
         }
 
         void updateTree() {
             for (auto *body : _bodies)
-                _tree.update(body, body->getComponent<ColliderComponent>()->getPositionedBB());
-        }
-
-        void removeInvalidEntitiesFromTree() {
-
+                if (body->isActive())
+                    _tree.update(body, body->getComponent<ColliderComponent>()->getPositionedBB());
+                else
+                    _tree.erase(body, body->getComponent<ColliderComponent>()->getPositionedBB());
         }
 
         void broadPhase(double dt) {
             for (auto *bodyA : _bodies) {
+                if (!bodyA->isActive())
+                    continue;
                 auto *collider = bodyA->getComponent<ColliderComponent>();
 
                 Math::Rect_d boxA = collider->getPositionedBB();
@@ -168,26 +170,29 @@ namespace Engine::Physics {
         }
 
         void integrateForces(double dt) {
-            for (auto &body : _bodies) {
-                auto *rigid = body->getComponent<RigidBodyComponent>();
-                rigid->integrateForces(dt);
-            }
+            for (auto &body : _bodies)
+                if (body->isActive()) {
+                    auto *rigid = body->getComponent<RigidBodyComponent>();
+                    rigid->integrateForces(dt);
+                }
         }
 
         void integrateVelocities(double dt) {
-            for (auto &body : _bodies) {
-                auto *rigid = body->getComponent<RigidBodyComponent>();
-                rigid->integrateVelocity(dt);
-            }
+            for (auto &body : _bodies)
+                if (body->isActive()) {
+                    auto *rigid = body->getComponent<RigidBodyComponent>();
+                    rigid->integrateVelocity(dt);
+                }
         }
 
         void clearForces() {
-            for (auto *body : _bodies) {
-                auto *rigid = body->getComponent<RigidBodyComponent>();
+            for (auto &body : _bodies)
+                if (body->isActive()) {
+                    auto *rigid = body->getComponent<RigidBodyComponent>();
 
-                rigid->acceleration = {0, 0};
-                rigid->torque = 0;
-            }
+                    rigid->acceleration = {0, 0};
+                    rigid->torque = 0;
+                }
         }
     };
 }

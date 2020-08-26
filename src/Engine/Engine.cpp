@@ -79,11 +79,6 @@ namespace Engine {
             ECS::EntityManager::getInstance()->update();
 
             ECS::SystemManager::getInstance()->update();
-
-            //refresh should happen only after all entities and systems were updated
-            // otherwise this can lead to dangling pointers of removed objects without
-            // any opportunity for systems to check for it beforehand
-            ECS::EntityManager::getInstance()->refresh();
         }
 
         void render() {
@@ -96,6 +91,13 @@ namespace Engine {
                 _debugWidget->render();
 
             _window->present();
+        }
+
+        void refresh() {
+            //refresh should happen only after all entities and systems were updated
+            // otherwise this can lead to dangling pointers of removed objects without
+            // any opportunity for systems to check for it beforehand
+            ECS::EntityManager::getInstance()->refresh();
         }
 
 
@@ -132,6 +134,17 @@ namespace Engine {
 
     void Engine::render() {
         _impl->render();
+    }
+
+    void Engine::refresh() {
+        _impl->refresh();
+    }
+
+    void Engine::loop() {
+        handleEvents();
+        update();
+        render();
+        refresh();
     }
 
     bool Engine::isRunning() {

@@ -31,9 +31,7 @@ public:
             Engine::DeltaTime::record();
             limiter.recordStart();
 
-            engine->handleEvents();
-            engine->update();
-            engine->render();
+            engine->loop();
 
             limiter.recordStop();
             limiter.delay();

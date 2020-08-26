@@ -31,6 +31,11 @@ public:
 
     }
 
+    void render() override {
+        if (Engine::Input::InputManager::getInstance()->onKeyUp(SDL_SCANCODE_R))
+            owner->destroy();
+    }
+
 private:
     Engine::TransformComponent *_transform = nullptr;
     Engine::Physics::RigidBodyComponent *_rigidBody = nullptr;
