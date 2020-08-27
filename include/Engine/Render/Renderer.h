@@ -3,13 +3,31 @@
 
 #include "SDL.h"
 
+#include "Engine/Math/Vector2.h"
+
 namespace Engine::Render {
     class Renderer {
     public:
-        Renderer(SDL_Renderer *renderer) : _renderer(renderer) {}
+        explicit Renderer(SDL_Renderer *renderer) : _renderer(renderer) {}
 
         SDL_Renderer *get() {
             return _renderer;
+        }
+
+        void setLogicalSize(Math::Vector2ui dimensions) {
+            SDL_RenderSetLogicalSize(_renderer, dimensions.x, dimensions.y);
+        }
+
+        Math::Vector2ui getLogicalSize() const {
+            int w, h;
+            SDL_RenderGetLogicalSize(_renderer, &w, &h);
+            return {w, h};
+        }
+
+        Math::Vector2ui getOutputSize() const {
+            int w, h;
+            SDL_GetRendererOutputSize(_renderer, &w, &h);
+            return {w, h};
         }
 
         void clear() {

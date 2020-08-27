@@ -9,6 +9,8 @@
 #include <bitset>
 #include <memory>
 #include <vector>
+#include <typeindex>
+#include <unordered_map>
 
 namespace Engine::ECS {
     class Entity : public GameObject {
@@ -175,13 +177,32 @@ namespace Engine::ECS {
         bool _isActive = true;
     };
 
+    class EntityFactory {
+    public:
+        virtual Entity *create() = 0;
+    };
+
     class EntityManager : public Singleton<EntityManager> {
     public:
         template<class T, typename ...Args>
-        Entity *createEntity(Args &&...args) {
+        T *createEntity(Args &&...args) {
             auto *entity = new T(std::forward<Args>(args)...);
             _entities.emplace_back(std::unique_ptr<T>(entity));
             return entity;
+        }
+
+        template<class T>
+        T *createEntityWithFactory() {
+            static auto id = std::type_index(typeid(T));
+            auto *entity = const_cast<T *>(_factories[id]->create());
+            _entities.emplace_back(std::unique_ptr<T>(entity));
+            return entity;
+        }
+
+        template<class T>
+        void registerFactory(EntityFactory *factory) {
+            static auto id = std::type_index(typeid(T));
+            _factories[id] = factory;
         }
 
         template<typename ...Ts>
@@ -261,6 +282,8 @@ namespace Engine::ECS {
     private:
         std::vector<std::unique_ptr<Entity>> _entities;
         std::vector<std::unique_ptr<Entity>> _entitiesToBeRemoved;
+
+        std::unordered_map<std::type_index, EntityFactory *> _factories;
     };
 }
 

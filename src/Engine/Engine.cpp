@@ -17,7 +17,7 @@ namespace Engine {
     class Engine::Impl {
     public:
         void init(const std::string& title,
-                  Math::Vector2d winDimensions,
+                  Math::Vector2ui winDimensions,
                   bool fullscreen) {
             _environment = new Render::Environment();
             _window = new Render::Window(title, winDimensions, fullscreen);
@@ -28,7 +28,7 @@ namespace Engine {
 
             _debugWidget = new DebugWidget();
 
-            ECS::SystemManager::getInstance()->createSystem<Render::RenderSystem>();
+            ECS::SystemManager::getInstance()->createSystem<Render::RenderSystem>(_window->getRenderer());
             ECS::SystemManager::getInstance()->createSystem<Physics::PhysicsSystem>();
 
             std::cout << "Engine init success." << std::endl;
@@ -117,7 +117,7 @@ namespace Engine {
             : _impl(std::make_unique<Impl>()) {}
 
     void Engine::init(const std::string& title,
-                      Math::Vector2d winDimensions,
+                      Math::Vector2ui winDimensions,
                       bool fullscreen) {
         _impl->init(title, winDimensions, fullscreen);
     }

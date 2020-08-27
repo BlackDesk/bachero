@@ -26,14 +26,18 @@ namespace Engine::Render {
         }
 
         //called internally by the render system
-        void render() {
+        void draw(Math::Vector2f cameraPos) {
             if (_transform)
                 _sprite->position = _transform->position + position;
             _sprite->frame = frame;
             _sprite->rotation = _transform->rotation;
             _sprite->anchorPointLocal = -position;
 
-            _sprite->render();
+            _sprite->draw(cameraPos);
+        }
+
+        Sprite *getSprite() const {
+            return _sprite.get();
         }
 
     private:

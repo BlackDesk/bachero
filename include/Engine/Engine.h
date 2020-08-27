@@ -12,7 +12,7 @@ namespace Engine {
         Engine();
 
         void init(const std::string& title,
-                  Math::Vector2d winDimensions,
+                  Math::Vector2ui winDimensions,
                   bool fullscreen);
         bool isRunning();
 

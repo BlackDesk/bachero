@@ -8,35 +8,34 @@
 namespace Engine::Render {
     class Sprite {
     public:
-        explicit Sprite(Texture *texture) : _texture(texture) {
+        explicit Sprite(Texture *texture_) : texture(texture_) {
             if (!texture)
                 throwRenderRuntimeException("Texture pointer can\'t be null.\n");
-            _frameSize = texture->size();
+            frameSize = texture->size();
         }
 
-        Sprite(Texture *texture, Math::Vector2ui frameSize)
+        Sprite(Texture *texture, Math::Vector2ui frameSize_)
                 : Sprite(texture) {
-            _frameSize = frameSize;
+            frameSize = frameSize_;
         }
 
-        void render() {
-            Math::Rect_ui src(Math::Vector2ui(frame.x * _frameSize.x,
-                                              frame.y * _frameSize.y),
-                              _frameSize);
-            Math::Rect_ui dst(position,
-                              _frameSize);
-            _texture->draw(src, dst, anchorPointLocal, rotation, flip);
+        void draw(Math::Vector2f cameraPos) {
+            Math::Rect_ui src(Math::Vector2ui(frame.x * frameSize.x,
+                                              frame.y * frameSize.y),
+                              frameSize);
+            Math::Rect_ui dst(position - cameraPos,
+                              frameSize);
+            texture->draw(src, dst, anchorPointLocal, rotation, flip);
         }
+
+        Texture *texture;
 
         Math::Vector2i position;
         Math::Vector2i anchorPointLocal;
+        Math::Vector2ui frameSize;
         Math::Vector2ui frame;
         Texture::Flip flip = Texture::Flip::none;
         float rotation = 0.0f;
-
-    private:
-        Texture *_texture;
-        Math::Vector2ui _frameSize;
     };
 }
 

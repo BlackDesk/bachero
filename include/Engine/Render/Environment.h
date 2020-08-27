@@ -15,6 +15,7 @@ namespace Engine::Render {
                 throwRenderRuntimeExceptionSDL("Could not initialize sdl2: \n");
             if (TTF_Init() < 0)
                 throwRenderRuntimeException("Could not initialize SDL TTF: \n" + TTF_GetError() + "\n");
+            SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, nullptr);
         }
 
         ~Environment() {

@@ -9,8 +9,8 @@ namespace Engine {
     class DebugWidget {
     public:
         DebugWidget() {
-            _text = std::make_unique<Render::Text>("assets/Open_Sans/OpenSans-regular.ttf",
-                                                    30,
+            _text = std::make_unique<Render::Text>("assets/fonts/SFPixelate.ttf",
+                                                    20,
                                                     Render::Color{0, 0, 0, 255},
                                                     Render::TextureManager::getInstance()->getDefaultRenderer());
             memset(_freqQueue, 0, sizeof(_freqQueue));

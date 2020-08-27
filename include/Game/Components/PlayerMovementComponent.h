@@ -8,23 +8,49 @@
 #include "Engine/Input/InputMapper.h"
 #include "Engine/Common/DeltaTime.h"
 
+#include "Game/Components/PlayerAnimationComponent.h"
+
 class PlayerMovementComponent : public Engine::ECS::Component {
 public:
     void init() override {
         if (!owner->hasComponent<Engine::TransformComponent>())
             owner->addComponent<Engine::TransformComponent>();
-        if (!owner->hasComponent<Engine::Physics::RigidBodyComponent>())
-            throw std::runtime_error("PlayerMovement requires RigidBody.");
         _transform = owner->getComponent<Engine::TransformComponent>();
         _rigidBody = owner->getComponent<Engine::Physics::RigidBodyComponent>();
+        _animation = owner->getComponent<PlayerAnimationComponent>();
     }
 
     void handleEvents() override {
 //        _rigidBody->applyAcceleration(Engine::Input::InputMapper::getInstance()->getMovementDir() * 10);
-        _rigidBody->velocity = Engine::Input::InputMapper::getInstance()->getMovementDir() * 200;
-        int lArr = Engine::Input::InputManager::getInstance()->isKeyDown(SDL_SCANCODE_K);
-        int rArr = Engine::Input::InputManager::getInstance()->isKeyDown(SDL_SCANCODE_L);
-        _rigidBody->angularVelocity += (rArr - lArr) * 5.0f * Engine::DeltaTime::get();
+        auto dir = Engine::Input::InputMapper::getInstance()->getMovementDir();
+        _rigidBody->velocity = dir * 80;
+
+        PlayerAnimationComponent::Direction direction = _animation->direction;
+        PlayerAnimationComponent::State state = _animation->state;
+        if (dir.length() > 0.05) {
+            state = PlayerAnimationComponent::State::walking;
+            if (abs(dir.x) >= abs(dir.y)) {
+                if (dir.x < 0)
+                    direction = PlayerAnimationComponent::Direction::left;
+                else
+                    direction = PlayerAnimationComponent::Direction::right;
+            } else {
+                if (dir.y < 0)
+                    direction = PlayerAnimationComponent::Direction::up;
+                else
+                    direction = PlayerAnimationComponent::Direction::down;
+            }
+        } else {
+            state = PlayerAnimationComponent::State::idle;
+        }
+
+        _animation->playerSpeed = dir.length();
+        if (direction != _animation->direction ||
+            state != _animation->state) {
+            _animation->state = state;
+            _animation->direction = direction;
+            _animation->currentFrame = 0;
+        }
     }
 
     void update() override {
@@ -37,6 +63,7 @@ public:
     }
 
 private:
+    PlayerAnimationComponent *_animation = nullptr;
     Engine::TransformComponent *_transform = nullptr;
     Engine::Physics::RigidBodyComponent *_rigidBody = nullptr;
 };
