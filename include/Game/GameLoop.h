@@ -13,6 +13,7 @@
 #include "Game/Entities/Player.h"
 #include "Game/Entities/Box.h"
 #include "Game/Entities/Wall.h"
+#include "Game/Entities/FollowingCamera.h"
 
 class GameLoop {
 public:
@@ -51,7 +52,8 @@ public:
 
     void initEntities() {
         auto *entityManager = Engine::ECS::EntityManager::getInstance();
-        entityManager->createEntity<Player>()->init();
+        auto *player = entityManager->createEntity<Player>();
+        player->init();
         for (int i = 0; i < 3; ++i)
             for (int j = 0; j < 3; ++j)
                 entityManager->createEntity<Box>(Engine::Math::Vector2d{50 + i * 15, 10 + j * 15})->init();
@@ -60,7 +62,8 @@ public:
         entityManager->createEntity<Wall>(Engine::Math::Rect_d{{0, 10}, {10, 460}})->init();
         entityManager->createEntity<Wall>(Engine::Math::Rect_d{{630, 10}, {10, 460}})->init();
         entityManager->createEntity<Wall>()->init();
-        entityManager->createEntity<Engine::Render::Camera>(Engine::Math::Vector2ui(186, 140))->init();
+        entityManager->createEntity<FollowingCamera>(Engine::Math::Vector2ui(186, 140),
+                                                     player)->init();
     }
 };
 

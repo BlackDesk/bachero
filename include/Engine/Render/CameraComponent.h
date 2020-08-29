@@ -66,6 +66,25 @@ namespace Engine::Render {
             return ++marker;
         }
     };
+
+    inline ECS::Entity *getActiveCamera() {
+        static std::vector<ECS::Entity *> cameras;
+        ECS::EntityManager::getInstance()->
+                getEntitiesThatHaveComponent<CameraComponent>(cameras);
+
+        ECS::Entity *activeCamera = nullptr;
+        CameraComponent::ActivityMarker marker = 0;
+        for (auto *camera : cameras) {
+            auto component = camera->getComponent<CameraComponent>();
+            if (!activeCamera ||
+                component->getActivityMarker() > marker) {
+                activeCamera = camera;
+                marker = component->getActivityMarker();
+            }
+        }
+
+        return activeCamera;
+    }
 }
 
 #endif //BACHERO_ENGINE_RENDER_CAMERA_COMPONENT

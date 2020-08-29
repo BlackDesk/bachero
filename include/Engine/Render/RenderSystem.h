@@ -17,13 +17,14 @@ namespace Engine::Render {
         }
 
         void render() override {
-            CameraComponent *camera = getActiveCamera();
+            ECS::Entity *camera = getActiveCamera();
 
             if (camera) {
-                Math::Rect_i cameraRect = camera->getPositionedRect();
+                auto *cameraComponent = camera->getComponent<CameraComponent>();
+                Math::Rect_i cameraRect = cameraComponent->getPositionedRect();
 
-                if (_renderer->getLogicalSize() != camera->getSize())
-                    _renderer->setLogicalSize(camera->getSize());
+                if (_renderer->getLogicalSize() != cameraComponent->getSize())
+                    _renderer->setLogicalSize(cameraComponent->getSize());
 
                 ECS::EntityManager::getInstance()->
                         getEntitiesThatHaveComponent<SpriteComponent>(_drawables);
@@ -43,24 +44,7 @@ namespace Engine::Render {
         }
 
     private:
-        CameraComponent *getActiveCamera() {
-            ECS::EntityManager::getInstance()->
-                    getEntitiesThatHaveComponent<CameraComponent>(_cameras);
-
-            CameraComponent *activeCamera = nullptr;
-            for (auto *camera : _cameras) {
-                auto component = camera->getComponent<CameraComponent>();
-                if (!activeCamera ||
-                    component->getActivityMarker() >
-                    activeCamera->getActivityMarker())
-                    activeCamera = component;
-            }
-
-            return activeCamera;
-        }
-
         std::vector<ECS::Entity *> _drawables;
-        std::vector<ECS::Entity *> _cameras;
         Renderer *_renderer;
     };
 }

@@ -12,6 +12,7 @@
 #include "Engine/Physics/Manifold.h"
 #include "Engine/Render/RenderUtils.h"
 #include "Engine/Common/HashMap.h"
+#include "Engine/Render/CameraComponent.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -62,33 +63,38 @@ namespace Engine::Physics {
 
         void render() override {
             if (DebugMode::isEnabled()) {
-                auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
-                auto *sdlRenderer = renderer->get();
+                if (auto *camera = Render::getActiveCamera()) {
+                    auto *renderer = Render::TextureManager::getInstance()->getDefaultRenderer();
+
+                    Math::Vector2f cameraPos =
+                            camera->getComponent<TransformComponent>()->position;
 
 //                AABBTreeSDLVisualizer viz(sdlRenderer);
 //                _tree.visualize(viz);
 
-                for (auto *body : _bodies) {
-                    if (!body->isActive())
-                        continue;
-                    auto *collider = body->getComponent<ColliderComponent>();
+                    for (auto *body : _bodies) {
+                        if (!body->isActive())
+                            continue;
+                        auto *collider = body->getComponent<ColliderComponent>();
 
-                    Math::Vector2f p1, p2, p3, p4;
-                    collider->getCorners(p1, p2, p3, p4);
+                        Math::Vector2f p1, p2, p3, p4;
+                        collider->getCorners(p1, p2, p3, p4);
 
-                    Render::drawCircle(renderer, {255, 0, 0, 255},
-                                       collider->getAnchorPoint(), 2);
-
-                    Render::drawQuadrangle(renderer, {0, 255, 0, 255},
-                                           p1, p2, p3, p4);
-                }
-
-                for (auto&[key, manifold] : _manifolds)
-                    for (std::size_t i = 0; i < manifold.contactsNum; ++i) {
-                        auto &contact = manifold.contacts[i];
                         Render::drawCircle(renderer, {255, 0, 0, 255},
-                                           contact.position, 2);
+                                           collider->getAnchorPoint() - cameraPos, 2);
+
+                        Render::drawQuadrangle(renderer, {0, 255, 0, 255},
+                                               p1 - cameraPos, p2 - cameraPos,
+                                               p3 - cameraPos, p4 - cameraPos);
                     }
+
+                    for (auto&[key, manifold] : _manifolds)
+                        for (std::size_t i = 0; i < manifold.contactsNum; ++i) {
+                            auto &contact = manifold.contacts[i];
+                            Render::drawCircle(renderer, {255, 0, 0, 255},
+                                               contact.position - cameraPos, 2);
+                        }
+                }
             }
         }
 
