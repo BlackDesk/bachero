@@ -35,7 +35,7 @@ namespace Engine::Render {
             whRatio = (float) _size.x / _size.y;
         }
 
-        void setWidth(uint32_t width)  {
+        void setWidth(uint32_t width) {
             _size = {width, width * hwRatio};
         }
 
@@ -50,7 +50,7 @@ namespace Engine::Render {
         Math::Rect_i getPositionedRect() const {
             Math::Rect_i rect;
             rect.position = _transform->position;
-            rect.size = (Math::Vector2ui)_size;
+            rect.size = (Math::Vector2ui) _size;
             return rect;
         }
 
@@ -75,7 +75,7 @@ namespace Engine::Render {
         ECS::Entity *activeCamera = nullptr;
         CameraComponent::ActivityMarker marker = 0;
         for (auto *camera : cameras) {
-            auto component = camera->getComponent<CameraComponent>();
+            auto *component = camera->getComponent<CameraComponent>();
             if (!activeCamera ||
                 component->getActivityMarker() > marker) {
                 activeCamera = camera;
